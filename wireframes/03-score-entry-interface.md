@@ -106,7 +106,7 @@
 - **Elimination Warning**: Highlights players approaching threshold
 - **Progress Indicator**: Shows completion status (4/5 players entered)
 
-### Validation & Error Handling
+### Validation & Error Handling (NOT NEEDED for the first release)
 
 #### Input Validation
 ```

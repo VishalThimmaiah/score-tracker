@@ -1,6 +1,6 @@
-# Game History Screen Wireframe
+# Game History Screen Wireframe (NEEDED - while in the game this must be easily accessible and the points must be editable)
 
-## Layout Structure - Comprehensive History View
+## Layout Structure - Comprehensive History View 
 
 ```
 ┌─────────────────────────────────────────────────────────┐

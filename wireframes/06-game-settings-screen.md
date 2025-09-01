@@ -1,4 +1,4 @@
-# Game Settings Screen Wireframe
+# Game Settings Screen Wireframe (NOT NEEDED AT ALL - GAME SETTINGS ARE ALREADY ADDED BEFORE THE GAME START)
 
 ## Layout Structure
 

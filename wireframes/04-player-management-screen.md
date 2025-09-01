@@ -1,6 +1,6 @@
 # Player Management Screen Wireframe
 
-## Layout Structure
+## Layout Structure (NOT NEEDED)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
