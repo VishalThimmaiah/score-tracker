@@ -133,7 +133,7 @@ export const useGameStore = create<GameStore>()(
 			},
 
 			pauseGame: () => {
-				set((state) => ({
+				set(() => ({
 					gameStatus: 'setup'
 				}))
 			},

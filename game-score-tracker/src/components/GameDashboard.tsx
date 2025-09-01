@@ -17,7 +17,7 @@ import {
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import PlayerCard from './PlayerCard'
-import ScoreEntryModal from './ScoreEntryModal'
+import ScoreEntrySheet from './ScoreEntrySheet'
 import ActionSheet from './ActionSheet'
 import { Plus, RotateCcw, Trophy, History, Users, Menu } from 'lucide-react'
 
@@ -66,7 +66,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							<Users className="h-4 w-4" />
 							{activePlayers.length} active
 						</span>
-						<span>Round {currentRound}</span>
+						<span>Current Round: {currentRound}</span>
 						<span>Target: {gameSettings.eliminationScore}</span>
 					</div>
 				</div>
@@ -154,7 +154,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 					<CardContent className="space-y-2">
 						<div className="grid grid-cols-2 gap-4 text-sm">
 							<div>
-								<span className="text-gray-600">Total Rounds:</span>
+								<span className="text-gray-600">Rounds Played:</span>
 								<div className="font-semibold">{Math.max(0, currentRound - 1)}</div>
 							</div>
 							<div>
@@ -184,13 +184,11 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				)}
 			</div>
 
-			{/* Score Entry Modal */}
-			{showScoreEntry && (
-				<ScoreEntryModal 
-					isOpen={showScoreEntry}
-					onClose={() => setShowScoreEntry(false)}
-				/>
-			)}
+			{/* Score Entry Sheet */}
+			<ScoreEntrySheet 
+				isOpen={showScoreEntry}
+				onClose={() => setShowScoreEntry(false)}
+			/>
 
 			{/* Action Sheet */}
 			<ActionSheet

@@ -19,9 +19,8 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Home, RotateCcw, History, X, Eraser } from 'lucide-react'
+import { Home, RotateCcw, History, Eraser } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
-import { useState } from 'react'
 
 interface ActionSheetProps {
 	isOpen: boolean
@@ -31,7 +30,6 @@ interface ActionSheetProps {
 
 export default function ActionSheet({ isOpen, onClose, onShowHistory }: ActionSheetProps) {
 	const { pauseGame, resetGame, clearScores } = useGameStore()
-	const [showResetDialog, setShowResetDialog] = useState(false)
 
 	const handleReturnHome = () => {
 		pauseGame()
