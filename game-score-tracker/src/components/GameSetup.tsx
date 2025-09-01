@@ -16,6 +16,7 @@ export default function GameSetup() {
 	
 	const { 
 		players, 
+		gameSettings,
 		addPlayer, 
 		removePlayer, 
 		setEliminationScore, 
@@ -35,7 +36,7 @@ export default function GameSetup() {
 	const handleStartGame = () => {
 		if (players.length >= 2) {
 			const eliminationScore = eliminationScoreRef.current?.value
-			const scoreValue = eliminationScore ? Number(eliminationScore) : 100
+			const scoreValue = (eliminationScore ? Number(eliminationScore) : gameSettings.lastEliminationScore) || 100
 			
 			// Prevent starting game if elimination score is 0
 			if (scoreValue <= 0) {
@@ -55,7 +56,7 @@ export default function GameSetup() {
 
 	const isValidEliminationScore = () => {
 		const eliminationScore = eliminationScoreRef.current?.value
-		const scoreValue = eliminationScore ? Number(eliminationScore) : 100
+		const scoreValue = eliminationScore ? Number(eliminationScore) : gameSettings.lastEliminationScore
 		return scoreValue > 0
 	}
 
@@ -92,7 +93,7 @@ export default function GameSetup() {
 								id="elimination-score"
 								ref={eliminationScoreRef}
 								type="number"
-								defaultValue={100}
+								defaultValue={gameSettings.lastEliminationScore}
 								min={1}
 								max={500}
 								step={10}

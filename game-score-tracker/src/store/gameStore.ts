@@ -11,6 +11,7 @@ export interface Player {
 
 export interface GameSettings {
 	eliminationScore: number
+	lastEliminationScore: number
 }
 
 export interface GameState {
@@ -44,7 +45,8 @@ type GameStore = GameState & GameActions
 const initialState: GameState = {
 	players: [],
 	gameSettings: {
-		eliminationScore: 100
+		eliminationScore: 100,
+		lastEliminationScore: 100
 	},
 	gameStatus: 'setup',
 	currentRound: 0
@@ -81,7 +83,8 @@ export const useGameStore = create<GameStore>()(
 				set((state) => ({
 					gameSettings: {
 						...state.gameSettings,
-						eliminationScore: score
+						eliminationScore: score,
+						lastEliminationScore: score
 					}
 				}))
 			},

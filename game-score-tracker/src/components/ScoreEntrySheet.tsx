@@ -209,9 +209,9 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 	if (!isOpen) return null
 
 	return (
-		<div className="fixed inset-0 z-50 bg-white">
+		<div className="fixed inset-0 z-50 bg-white flex flex-col">
 			{/* Header */}
-			<div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+			<div className="border-b border-gray-200 bg-white flex-shrink-0">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex items-center justify-between h-16">
 						<div className="flex items-center gap-4">
@@ -249,11 +249,11 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 				</div>
 			</div>
 
-			{/* Main Content */}
-			<div className="flex-1 overflow-y-auto">
+			{/* Main Content - Scrollable */}
+			<div className="flex-1 overflow-y-auto min-h-0">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 					{/* Player Grid */}
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-4">
 						{activePlayers.map((player, index) => (
 							<PlayerScoreCard
 								key={player.id}
@@ -270,7 +270,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 			</div>
 
 			{/* Footer */}
-			<div className="border-t border-gray-200 bg-white sticky bottom-0 z-10">
+			<div className="border-t border-gray-200 bg-white flex-shrink-0">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 					{/* Progress */}
 					<div className="text-center mb-4">
