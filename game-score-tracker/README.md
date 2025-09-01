@@ -1,36 +1,155 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Game Score Tracker
+
+A modern, responsive web application for tracking scores in card games like 5 Cards, Secret 7, and custom variants. Built with Next.js 15, TypeScript, and Tailwind CSS.
+
+## Features
+
+- **Multi-Game Support**: Track scores for various card games including 5 Cards, Secret 7, and custom variants
+- **Player Management**: Add 2-8 players with customizable elimination scores
+- **Real-time Scoring**: Live score updates with player elimination tracking
+- **Game History**: View complete game history with round-by-round breakdowns
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- **Modern UI**: Clean, intuitive interface built with shadcn/ui components
+- **Error Handling**: Robust error boundaries for production reliability
+- **SEO Optimized**: Complete metadata and Open Graph tags for social sharing
+
+## Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript with strict mode
+- **Styling**: Tailwind CSS with custom design system
+- **UI Components**: shadcn/ui component library
+- **State Management**: Zustand for game state
+- **Icons**: Lucide React
+- **Notifications**: Sonner for toast notifications
+- **Build Tool**: Turbopack for fast development and builds
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ 
+- pnpm (recommended) or npm
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd game-score-tracker
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+pnpm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Start the development server:
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Learn More
+### Production Build
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Build for production
+pnpm build
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Start production server
+pnpm start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Game Rules Supported
 
-## Deploy on Vercel
+### 5 Cards
+- Players start with 5 cards
+- Score points based on card combinations
+- First player to reach elimination score is out
+- Last player standing wins
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Secret 7
+- Strategic card game with hidden objectives
+- Points accumulated over multiple rounds
+- Elimination-based gameplay
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Custom Variants
+- Configurable elimination scores
+- Flexible player count (2-8 players)
+- Adaptable to house rules
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── layout.tsx         # Root layout with metadata
+│   ├── page.tsx           # Home page
+│   └── globals.css        # Global styles
+├── components/            # React components
+│   ├── ui/               # shadcn/ui components
+│   ├── GameSetup.tsx     # Game configuration
+│   ├── GameDashboard.tsx # Main game interface
+│   ├── GameHistory.tsx   # Game history view
+│   ├── PlayerCard.tsx    # Player score display
+│   ├── ScoreEntryModal.tsx # Score input modal
+│   └── ErrorBoundary.tsx # Error handling
+├── lib/                  # Utilities
+│   └── utils.ts          # Helper functions
+└── store/                # State management
+    └── gameStore.ts      # Zustand store
+```
+
+## Development
+
+### Code Quality
+
+- **TypeScript**: Strict mode enabled for type safety
+- **ESLint**: Configured with Next.js recommended rules
+- **Prettier**: Code formatting (via editor integration)
+- **Error Boundaries**: Production-ready error handling
+
+### Performance
+
+- **Static Generation**: Pages pre-rendered at build time
+- **Code Splitting**: Automatic code splitting with Next.js
+- **Image Optimization**: Next.js Image component for optimized loading
+- **Bundle Analysis**: Optimized bundle size (158kB First Load JS)
+
+## Deployment
+
+The application is optimized for deployment on:
+
+- **Vercel** (recommended): Zero-config deployment
+- **Netlify**: Static site hosting
+- **Docker**: Containerized deployment
+- **Traditional hosting**: Static export support
+
+### Environment Variables
+
+For production deployment, set:
+
+```bash
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/new-feature`
+3. Commit changes: `git commit -am 'Add new feature'`
+4. Push to branch: `git push origin feature/new-feature`
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support, please open an issue on the GitHub repository or contact the development team.
+
+---
+
+Built with ❤️ using Next.js and modern web technologies.
