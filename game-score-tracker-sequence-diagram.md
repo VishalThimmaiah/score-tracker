@@ -1,9 +1,9 @@
 # Game Score Tracker - Sequence Diagram
 
 ## Overview
-This sequence diagram illustrates the main user flows and system interactions for the Game Score Tracking App based on the wireframes analysis.
+This sequence diagram shows the core user flow for the Game Score Tracking App from launch to completion.
 
-## Main Sequence Diagram
+## Main User Flow Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -11,157 +11,104 @@ sequenceDiagram
     participant GameSetup as Game Setup Screen
     participant Dashboard as Main Dashboard
     participant ScoreEntry as Score Entry Interface
-    participant PlayerMgmt as Player Management
     participant GameHistory as Game History
     participant DataStore as Local Storage
     participant UI as UI Components
 
-    Note over User, UI: 1. NEW GAME SETUP FLOW
+    Note over User, UI: 1. APP LAUNCH & GAME SETUP
     
     User->>GameSetup: Launch App
-    GameSetup->>UI: Display setup form
-    User->>GameSetup: Enter game name & type
-    User->>GameSetup: Set elimination threshold (100 pts)
-    User->>GameSetup: Add players (min 2, max 8)
-    GameSetup->>GameSetup: Validate player count
+    GameSetup->>UI: Show Game Setup Screen
+    User->>GameSetup: Enter game name
+    User->>GameSetup: Select game type (5 Cards, Secret 7, Custom)
+    User->>GameSetup: Set elimination threshold (100 points)
+    User->>GameSetup: Add players (Alice, Bob, Charlie)
+    GameSetup->>GameSetup: Validate inputs (min 2 players)
     User->>GameSetup: Click "Start Game"
     GameSetup->>DataStore: Save game configuration
-    GameSetup->>Dashboard: Navigate to dashboard
+    GameSetup->>Dashboard: Navigate to Main Dashboard
     
-    Note over User, UI: 2. MAIN GAME FLOW - ROUND MANAGEMENT
+    Note over User, UI: 2. GAME DASHBOARD - CURRENT STATUS DISPLAY
     
-    Dashboard->>UI: Display player scores & rankings
-    Dashboard->>UI: Show progress bars with color coding
+    Dashboard->>DataStore: Load game data
+    Dashboard->>UI: Display current status
+    Dashboard->>UI: Show player scores (Alice: 0, Bob: 0, Charlie: 0)
+    Dashboard->>UI: Show progress bars (all at 0%)
+    Dashboard->>UI: Show round counter (Round 1)
+    Dashboard->>UI: Display "Add Round Scores" button
+    
+    Note over User, UI: 3. FIRST ROUND - ADD SCORES
+    
     User->>Dashboard: Click "Add Round Scores"
-    Dashboard->>ScoreEntry: Open score entry modal
-    
-    Note over User, UI: 3. SCORE ENTRY FLOW
-    
-    ScoreEntry->>UI: Display player input fields
-    User->>ScoreEntry: Enter score for Player 1
-    ScoreEntry->>ScoreEntry: Calculate new total
-    ScoreEntry->>UI: Update real-time total display
-    User->>ScoreEntry: Enter score for Player 2
-    ScoreEntry->>ScoreEntry: Calculate new total
-    User->>ScoreEntry: Continue for all active players
-    
-    alt Player reaches elimination threshold
-        ScoreEntry->>UI: Show elimination warning
-        User->>ScoreEntry: Confirm elimination
-        ScoreEntry->>DataStore: Mark player as eliminated
-    end
-    
+    Dashboard->>ScoreEntry: Open Score Entry Interface
+    ScoreEntry->>UI: Show score input form for all players
+    User->>ScoreEntry: Enter Alice's score (8 points)
+    ScoreEntry->>UI: Show new total (Alice: 8)
+    User->>ScoreEntry: Enter Bob's score (12 points)
+    ScoreEntry->>UI: Show new total (Bob: 12)
+    User->>ScoreEntry: Enter Charlie's score (5 points)
+    ScoreEntry->>UI: Show new total (Charlie: 5)
     User->>ScoreEntry: Click "Save Round"
-    ScoreEntry->>DataStore: Save round scores
+    ScoreEntry->>DataStore: Save round 1 scores
     ScoreEntry->>Dashboard: Return to dashboard
-    Dashboard->>UI: Update player rankings
-    Dashboard->>UI: Refresh progress bars
     
-    Note over User, UI: 4. ONGOING GAME MANAGEMENT
+    Note over User, UI: 4. UPDATED STATUS AFTER ROUND 1
     
-    loop Multiple Rounds
-        User->>Dashboard: Monitor game progress
-        User->>Dashboard: Add next round scores
-        Dashboard->>ScoreEntry: Open score entry
-        User->>ScoreEntry: Enter scores
-        ScoreEntry->>DataStore: Save scores
-        ScoreEntry->>Dashboard: Update dashboard
-    end
+    Dashboard->>DataStore: Load updated game data
+    Dashboard->>UI: Update current status display
+    Dashboard->>UI: Show updated scores (Alice: 8, Bob: 12, Charlie: 5)
+    Dashboard->>UI: Update progress bars (Alice: 8%, Bob: 12%, Charlie: 5%)
+    Dashboard->>UI: Show round counter (Round 2)
+    Dashboard->>UI: Show player rankings (1st: Charlie, 2nd: Alice, 3rd: Bob)
     
-    Note over User, UI: 5. SIMPLIFIED PLAYER MANAGEMENT (SETUP ONLY)
+    Note over User, UI: 5. MULTIPLE ROUNDS - CONTINUOUS PLAY
     
-    Note over GameSetup, DataStore: Player management only during game setup
-    Note over Dashboard, UI: Players displayed with status on dashboard
-    Note over ScoreEntry, UI: Eliminated players automatically handled
-    
-    Note over User, UI: 6. GAME HISTORY & ANALYSIS
-    
-    User->>Dashboard: Access game history
-    Dashboard->>GameHistory: Navigate to history screen
-    GameHistory->>DataStore: Load complete game data
-    GameHistory->>UI: Display round-by-round table
-    
-    alt View different history formats
-        User->>GameHistory: Switch to chart view
-        GameHistory->>UI: Display trend charts
-    else
-        User->>GameHistory: Switch to player view
-        GameHistory->>UI: Display individual stats
-    end
-    
-    alt Export game data
-        User->>GameHistory: Click export
-        GameHistory->>UI: Show export options
-        User->>GameHistory: Select format (PDF/CSV/JSON)
-        GameHistory->>DataStore: Generate export file
-        GameHistory->>UI: Provide download/share options
-    end
-    
-    Note over User, UI: 7. GAME COMPLETION FLOW
-    
-    alt Game ends naturally
-        ScoreEntry->>ScoreEntry: Detect only 1 active player
-        ScoreEntry->>Dashboard: Auto-complete game
-        Dashboard->>DataStore: Mark game as completed
-        Dashboard->>GameHistory: Navigate to final results
-        GameHistory->>UI: Display winner & final rankings
-    end
-    
-    alt Manual game end
-        User->>Dashboard: Click "End Game"
-        Dashboard->>UI: Show confirmation dialog
-        User->>Dashboard: Confirm end game
-        Dashboard->>DataStore: Mark game as completed
-        Dashboard->>GameHistory: Navigate to results
-    end
-    
-    Note over User, UI: 8. ERROR HANDLING FLOWS
-    
-    alt Invalid score entry
-        User->>ScoreEntry: Enter invalid score
-        ScoreEntry->>UI: Show error message
-        User->>ScoreEntry: Correct input
-        ScoreEntry->>UI: Clear error state
-    end
-    
-    alt Data persistence failure
-        ScoreEntry->>DataStore: Attempt to save scores
-        DataStore-->>ScoreEntry: Save failed
-        ScoreEntry->>UI: Show retry dialog
-        User->>ScoreEntry: Retry save
-        ScoreEntry->>DataStore: Retry save operation
-    end
-    
-    alt Accidental navigation
-        User->>ScoreEntry: Press back with unsaved data
-        ScoreEntry->>UI: Show confirmation dialog
-        alt Save and exit
-            User->>ScoreEntry: Choose "Save & Exit"
-            ScoreEntry->>DataStore: Save current data
-            ScoreEntry->>Dashboard: Navigate back
-        else
-            User->>ScoreEntry: Choose "Discard"
-            ScoreEntry->>Dashboard: Navigate back without saving
+    loop Multiple Rounds (2, 3, 4, ...)
+        User->>Dashboard: Click "Add Round Scores"
+        Dashboard->>ScoreEntry: Open Score Entry Interface
+        User->>ScoreEntry: Enter scores for all active players
+        ScoreEntry->>DataStore: Save round scores
+        ScoreEntry->>Dashboard: Return to dashboard
+        Dashboard->>UI: Update current status
+        Dashboard->>UI: Show updated player scores
+        Dashboard->>UI: Update progress bars and rankings
+        Dashboard->>UI: Show current round number
+        
+        alt Player reaches elimination threshold
+            Dashboard->>UI: Mark player as eliminated (red status)
+            Dashboard->>UI: Show elimination notification
         end
     end
     
-    Note over User, UI: 9. PERFORMANCE OPTIMIZATIONS
+    Note over User, UI: 6. GAME END - MANUAL OR AUTOMATIC
     
-    alt Large game handling (20+ rounds)
-        GameHistory->>DataStore: Request large dataset
-        DataStore->>GameHistory: Return paginated data
-        GameHistory->>UI: Display with virtual scrolling
-        User->>GameHistory: Scroll to load more
-        GameHistory->>DataStore: Load additional rounds
+    alt Manual Game End
+        User->>Dashboard: Click "End Game" button
+        Dashboard->>UI: Show confirmation dialog
+        User->>Dashboard: Confirm end game
+        Dashboard->>DataStore: Mark game as completed
+    else Automatic Game End
+        Dashboard->>Dashboard: Detect only 1 active player remaining
+        Dashboard->>DataStore: Mark game as completed automatically
     end
     
-    Note over User, UI: 10. STATE MANAGEMENT
+    Note over User, UI: 7. FINAL STATUS DISPLAY
+    
+    Dashboard->>GameHistory: Navigate to final results
+    GameHistory->>DataStore: Load complete game data
+    GameHistory->>UI: Display final status
+    GameHistory->>UI: Show final scores (Alice: 95, Bob: 89, Charlie: 102)
+    GameHistory->>UI: Show winner announcement (🏆 Winner: Bob - 89 points)
+    GameHistory->>UI: Show final rankings
+    GameHistory->>UI: Display complete round-by-round history
+    GameHistory->>UI: Show game summary (Duration, Total rounds, etc.)
+    
+    Note over User, UI: 8. DATA PERSISTENCE
     
     rect rgb(240, 248, 255)
-        Note over DataStore: Game States: Setup → Active → Paused → Completed
-        Note over DataStore: Player States: Added → Active → Warning → Eliminated
-        Note over DataStore: Auto-save on every score update
-        Note over DataStore: Maintain game history for analysis
+        Note over DataStore: Auto-save after every score entry
+        Note over DataStore: Maintain complete game history
+        Note over DataStore: Store final results and winner
     end
 ```
 

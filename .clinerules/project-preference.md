@@ -1,1 +1,1 @@
-Goal is to create a working 1st model 
+Goal is to create a 1st working model. Keeping it simple.
