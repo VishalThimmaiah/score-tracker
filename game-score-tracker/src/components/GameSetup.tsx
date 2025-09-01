@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef } from 'react'
 import Image from 'next/image'
 import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
@@ -11,8 +11,8 @@ import { Plus, Trash2, Users, Target } from 'lucide-react'
 import QRCodeWithLogo from './QRCodeWithLogo'
 
 export default function GameSetup() {
-	const [playerName, setPlayerName] = useState('')
-	const [localEliminationScore, setLocalEliminationScore] = useState(100)
+	const playerNameRef = useRef<HTMLInputElement>(null)
+	const eliminationScoreRef = useRef<HTMLInputElement>(null)
 	
 	const { 
 		players, 
@@ -23,15 +23,26 @@ export default function GameSetup() {
 	} = useGameStore()
 
 	const handleAddPlayer = () => {
-		if (playerName.trim() && players.length < 8) {
+		const playerName = playerNameRef.current?.value.trim()
+		if (playerName && players.length < 8) {
 			addPlayer(playerName)
-			setPlayerName('')
+			if (playerNameRef.current) {
+				playerNameRef.current.value = ''
+			}
 		}
 	}
 
 	const handleStartGame = () => {
 		if (players.length >= 2) {
-			setEliminationScore(localEliminationScore)
+			const eliminationScore = eliminationScoreRef.current?.value
+			const scoreValue = eliminationScore ? Number(eliminationScore) : 100
+			
+			// Prevent starting game if elimination score is 0
+			if (scoreValue <= 0) {
+				return
+			}
+			
+			setEliminationScore(scoreValue)
 			startGame()
 		}
 	}
@@ -40,6 +51,12 @@ export default function GameSetup() {
 		if (e.key === 'Enter') {
 			handleAddPlayer()
 		}
+	}
+
+	const isValidEliminationScore = () => {
+		const eliminationScore = eliminationScoreRef.current?.value
+		const scoreValue = eliminationScore ? Number(eliminationScore) : 100
+		return scoreValue > 0
 	}
 
 	return (
@@ -73,16 +90,16 @@ export default function GameSetup() {
 							<Label htmlFor="elimination-score">Elimination Score</Label>
 							<Input
 								id="elimination-score"
+								ref={eliminationScoreRef}
 								type="number"
-								value={localEliminationScore}
-								onChange={(e) => setLocalEliminationScore(Number(e.target.value))}
-								min={50}
+								defaultValue={100}
+								min={1}
 								max={500}
 								step={10}
 								className="mt-1"
 							/>
 							<p className="text-sm text-gray-500 mt-1">
-								Players are eliminated when they reach this score
+								Players are eliminated when they reach this score (must be greater than 0)
 							</p>
 						</div>
 					</CardContent>
@@ -103,16 +120,15 @@ export default function GameSetup() {
 						<div className="flex gap-2">
 							<div className="flex-1">
 								<Input
+									ref={playerNameRef}
 									placeholder="Enter player name"
-									value={playerName}
-									onChange={(e) => setPlayerName(e.target.value)}
 									onKeyPress={handleKeyPress}
 									disabled={players.length >= 8}
 								/>
 							</div>
 							<Button 
 								onClick={handleAddPlayer}
-								disabled={!playerName.trim() || players.length >= 8}
+								disabled={players.length >= 8}
 								size="icon"
 							>
 								<Plus className="h-4 w-4" />
@@ -161,10 +177,17 @@ export default function GameSetup() {
 					</CardContent>
 				</Card>
 
+				{/* Elimination Score Validation */}
+				{!isValidEliminationScore() && (
+					<div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+						Elimination score must be greater than 0 to start the game
+					</div>
+				)}
+
 				{/* Start Game Button */}
 				<Button 
 					onClick={handleStartGame}
-					disabled={players.length < 2}
+					disabled={players.length < 2 || !isValidEliminationScore()}
 					className="w-full h-12 text-lg font-semibold"
 					size="lg"
 				>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,29 +23,17 @@ interface ScoreEntryModalProps {
 
 export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProps) {
 	const { players, currentRound, addRoundScores } = useGameStore()
-	const [scores, setScores] = useState<{ [playerId: string]: string }>({})
+	const scoreRefs = useRef<{ [playerId: string]: HTMLInputElement | null }>({})
 	const [isSubmitting, setIsSubmitting] = useState(false)
-
-	// Initialize scores when modal opens
-	useEffect(() => {
-		if (isOpen) {
-			const initialScores: { [playerId: string]: string } = {}
-			players.forEach(player => {
-				if (!player.isEliminated) {
-					initialScores[player.id] = ''
-				}
-			})
-			setScores(initialScores)
-		}
-	}, [isOpen, players])
 
 	const handleScoreChange = (playerId: string, value: string) => {
 		// Allow only numbers and empty string
-		if (value === '' || /^\d+$/.test(value)) {
-			setScores(prev => ({
-				...prev,
-				[playerId]: value
-			}))
+		if (value !== '' && !/^\d+$/.test(value)) {
+			// Reset to previous valid value or empty
+			const input = scoreRefs.current[playerId]
+			if (input) {
+				input.value = input.value.replace(/[^\d]/g, '')
+			}
 		}
 	}
 
@@ -55,13 +43,21 @@ export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProp
 		try {
 			// Validate all scores are entered
 			const activePlayers = players.filter(p => !p.isEliminated)
-			const scoresArray = activePlayers.map(player => ({
-				playerId: player.id,
-				score: parseInt(scores[player.id] || '0')
-			}))
+			const scoresArray = activePlayers.map(player => {
+				const input = scoreRefs.current[player.id]
+				const score = parseInt(input?.value || '0')
+				return {
+					playerId: player.id,
+					score: score
+				}
+			})
 
 			// Check if all scores are valid
-			const hasEmptyScores = scoresArray.some(s => isNaN(s.score) || s.score < 0)
+			const hasEmptyScores = scoresArray.some(s => {
+				const input = scoreRefs.current[s.playerId]
+				return isNaN(s.score) || s.score < 0 || !input?.value.trim()
+			})
+			
 			if (hasEmptyScores) {
 				toast.error('Please enter valid scores for all active players.')
 				return
@@ -72,6 +68,12 @@ export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProp
 			
 			// Show success message
 			toast.success(`Round ${currentRound} scores saved successfully!`)
+			
+			// Clear all inputs
+			activePlayers.forEach(player => {
+				const input = scoreRefs.current[player.id]
+				if (input) input.value = ''
+			})
 			
 			// Close modal
 			onClose()
@@ -92,11 +94,14 @@ export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProp
 			if (currentIndex < activePlayerIds.length - 1) {
 				// Focus next input
 				const nextPlayerId = activePlayerIds[currentIndex + 1]
-				const nextInput = document.getElementById(`score-${nextPlayerId}`)
+				const nextInput = scoreRefs.current[nextPlayerId]
 				nextInput?.focus()
 			} else {
 				// Submit if all scores are filled
-				const allFilled = activePlayerIds.every(id => scores[id] && scores[id].trim() !== '')
+				const allFilled = activePlayerIds.every(id => {
+					const input = scoreRefs.current[id]
+					return input?.value && input.value.trim() !== ''
+				})
 				if (allFilled) {
 					handleSubmit()
 				}
@@ -105,9 +110,10 @@ export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProp
 	}
 
 	const activePlayers = players.filter(p => !p.isEliminated)
-	const allScoresEntered = activePlayers.every(player => 
-		scores[player.id] && scores[player.id].trim() !== ''
-	)
+	const allScoresEntered = activePlayers.every(player => {
+		const input = scoreRefs.current[player.id]
+		return input?.value && input.value.trim() !== ''
+	})
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
@@ -133,11 +139,11 @@ export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProp
 							</Label>
 							<Input
 								id={`score-${player.id}`}
+								ref={(el) => { scoreRefs.current[player.id] = el }}
 								type="number"
 								min="0"
 								max="100"
 								placeholder="Enter score"
-								value={scores[player.id] || ''}
 								onChange={(e) => handleScoreChange(player.id, e.target.value)}
 								onKeyPress={(e) => handleKeyPress(e, player.id)}
 								className="text-lg text-center"

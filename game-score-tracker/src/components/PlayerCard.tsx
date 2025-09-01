@@ -82,7 +82,7 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 				<div className="space-y-2">
 					<div className="flex justify-between text-sm opacity-75">
 						<span>Progress to elimination</span>
-						<span>{Math.min(Math.round(scorePercentage), 100)}%</span>
+						<span>{Math.min(scorePercentage, 100).toFixed(1)}%</span>
 					</div>
 					<div className="w-full bg-white/30 rounded-full h-2">
 						<div 
