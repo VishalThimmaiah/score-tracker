@@ -13,7 +13,7 @@ interface PlayerCardProps {
 
 export default function PlayerCard({ player, rank, eliminationScore, isWinner = false }: PlayerCardProps) {
 	// Calculate score percentage for color coding
-	const scorePercentage = (player.totalScore / eliminationScore) * 100
+	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
 	
 	// Determine background color based on score percentage
 	const getBackgroundColor = () => {
