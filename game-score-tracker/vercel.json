@@ -7,11 +7,6 @@
 	"regions": [
 		"iad1"
 	],
-	"functions": {
-		"app/**/*.{js,ts,jsx,tsx}": {
-			"runtime": "nodejs20.x"
-		}
-	},
 	"headers": [
 		{
 			"source": "/(.*)",
