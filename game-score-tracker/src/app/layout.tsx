@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     description: "Track scores for card games like 5 Cards, Secret 7, and custom variants. Simple, elegant scoring with player elimination and game history.",
     images: ["/logo.png"],
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://game-score-tracker.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://scoretracker.vishalthimmaiah.com'),
   robots: {
     index: true,
     follow: true,
