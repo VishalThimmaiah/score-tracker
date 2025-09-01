@@ -68,33 +68,11 @@ sequenceDiagram
         ScoreEntry->>Dashboard: Update dashboard
     end
     
-    Note over User, UI: 5. PLAYER MANAGEMENT FLOW
+    Note over User, UI: 5. SIMPLIFIED PLAYER MANAGEMENT (SETUP ONLY)
     
-    User->>Dashboard: Access player management
-    Dashboard->>PlayerMgmt: Navigate to player screen
-    PlayerMgmt->>UI: Display player list with actions
-    
-    alt Add new player mid-game
-        User->>PlayerMgmt: Click "Add Player"
-        PlayerMgmt->>UI: Show add player modal
-        User->>PlayerMgmt: Enter player name
-        User->>PlayerMgmt: Select starting score option
-        PlayerMgmt->>DataStore: Add player to game
-        PlayerMgmt->>UI: Update player list
-    end
-    
-    alt Edit existing player
-        User->>PlayerMgmt: Click edit player
-        PlayerMgmt->>UI: Show edit modal
-        User->>PlayerMgmt: Modify player details
-        PlayerMgmt->>DataStore: Update player data
-    end
-    
-    alt Disable/Enable player
-        User->>PlayerMgmt: Swipe or click disable
-        PlayerMgmt->>DataStore: Update player status
-        PlayerMgmt->>UI: Update visual status
-    end
+    Note over GameSetup, DataStore: Player management only during game setup
+    Note over Dashboard, UI: Players displayed with status on dashboard
+    Note over ScoreEntry, UI: Eliminated players automatically handled
     
     Note over User, UI: 6. GAME HISTORY & ANALYSIS
     

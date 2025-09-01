@@ -1,0 +1,1 @@
+Goal is to create a working 1st model 
