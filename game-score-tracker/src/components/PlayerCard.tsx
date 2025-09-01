@@ -42,9 +42,9 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 	}
 
 	return (
-		<Card className={`${getBackgroundColor()} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''}`}>
+		<Card className={`${getBackgroundColor()} transition-all duration-300 py-3 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''}`}>
 			<CardContent className="p-4">
-				<div className="flex items-center justify-between mb-3">
+				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center gap-3">
 						{/* Rank Badge */}
 						<div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
@@ -79,7 +79,7 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 				</div>
 
 				{/* Progress Bar */}
-				<div className="space-y-2">
+				<div className="space-y-1">
 					<div className="flex justify-between text-sm opacity-75">
 						<span>Progress to elimination</span>
 						<span>{Math.min(scorePercentage, 100).toFixed(1)}%</span>
@@ -94,7 +94,7 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 
 				{/* Last Round Score */}
 				{player.scores.length > 0 && (
-					<div className="mt-3 pt-3 border-t border-current/20">
+					<div className="mt-2 pt-2 border-t border-current/20">
 						<div className="flex justify-between text-sm">
 							<span className="opacity-75">Last round:</span>
 							<span className="font-medium">
@@ -106,7 +106,7 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 
 				{/* Winner Badge */}
 				{isWinner && (
-					<div className="mt-3 pt-3 border-t border-yellow-400/30">
+					<div className="mt-2 pt-2 border-t border-yellow-400/30">
 						<div className="flex items-center justify-center gap-2 text-yellow-700 font-semibold">
 							<Crown className="h-4 w-4" />
 							<span>Winner!</span>

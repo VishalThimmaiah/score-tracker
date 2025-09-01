@@ -24,7 +24,7 @@ export default function GameSetup() {
 
 	const handleAddPlayer = () => {
 		const playerName = playerNameRef.current?.value.trim()
-		if (playerName && players.length < 8) {
+		if (playerName) {
 			addPlayer(playerName)
 			if (playerNameRef.current) {
 				playerNameRef.current.value = ''
@@ -110,10 +110,10 @@ export default function GameSetup() {
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<Users className="h-5 w-5" />
-							Players ({players.length}/8)
+							Players ({players.length})
 						</CardTitle>
 						<CardDescription>
-							Add 2-8 players to start the game
+							Add 2 or more players to start the game
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -123,12 +123,10 @@ export default function GameSetup() {
 									ref={playerNameRef}
 									placeholder="Enter player name"
 									onKeyPress={handleKeyPress}
-									disabled={players.length >= 8}
 								/>
 							</div>
 							<Button 
 								onClick={handleAddPlayer}
-								disabled={players.length >= 8}
 								size="icon"
 							>
 								<Plus className="h-4 w-4" />
@@ -166,12 +164,6 @@ export default function GameSetup() {
 						{players.length < 2 && (
 							<p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
 								Add at least 2 players to start the game
-							</p>
-						)}
-						
-						{players.length >= 8 && (
-							<p className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
-								Maximum of 8 players reached
 							</p>
 						)}
 					</CardContent>

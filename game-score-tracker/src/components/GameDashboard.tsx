@@ -18,7 +18,8 @@ import {
 } from '@/components/ui/alert-dialog'
 import PlayerCard from './PlayerCard'
 import ScoreEntryModal from './ScoreEntryModal'
-import { Plus, RotateCcw, Trophy, History, Users } from 'lucide-react'
+import ActionSheet from './ActionSheet'
+import { Plus, RotateCcw, Trophy, History, Users, Menu } from 'lucide-react'
 
 interface GameDashboardProps {
 	onShowHistory: () => void
@@ -26,6 +27,7 @@ interface GameDashboardProps {
 
 export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 	const [showScoreEntry, setShowScoreEntry] = useState(false)
+	const [showActionSheet, setShowActionSheet] = useState(false)
 	
 	const { 
 		players, 
@@ -46,7 +48,15 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
 			<div className="max-w-md mx-auto space-y-4">
 				{/* Header */}
-				<div className="text-center py-4">
+				<div className="relative text-center py-4">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => setShowActionSheet(true)}
+						className="absolute left-0 top-4 h-8 w-8"
+					>
+						<Menu className="h-5 w-5" />
+					</Button>
 					<div className="flex items-center justify-center gap-2 mb-1">
 						<Image src="/logo.png" alt="Game Score Tracker" width={32} height={32} className="w-8 h-8" />
 						<h1 className="text-2xl font-bold text-gray-900">Game Score Tracker</h1>
@@ -181,6 +191,13 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 					onClose={() => setShowScoreEntry(false)}
 				/>
 			)}
+
+			{/* Action Sheet */}
+			<ActionSheet
+				isOpen={showActionSheet}
+				onClose={() => setShowActionSheet(false)}
+				onShowHistory={onShowHistory}
+			/>
 		</div>
 	)
 }

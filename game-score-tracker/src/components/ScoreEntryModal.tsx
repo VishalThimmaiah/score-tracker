@@ -25,6 +25,13 @@ export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProp
 	const { players, currentRound, addRoundScores } = useGameStore()
 	const scoreRefs = useRef<{ [playerId: string]: HTMLInputElement | null }>({})
 	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [scores, setScores] = useState<{ [playerId: string]: string }>({})
+
+	const handleClose = () => {
+		// Clear scores state when modal is closed
+		setScores({})
+		onClose()
+	}
 
 	const handleScoreChange = (playerId: string, value: string) => {
 		// Allow only numbers and empty string
@@ -33,8 +40,15 @@ export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProp
 			const input = scoreRefs.current[playerId]
 			if (input) {
 				input.value = input.value.replace(/[^\d]/g, '')
+				return
 			}
 		}
+		
+		// Update state to trigger re-render
+		setScores(prev => ({
+			...prev,
+			[playerId]: value
+		}))
 	}
 
 	const handleSubmit = async () => {
@@ -69,11 +83,12 @@ export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProp
 			// Show success message
 			toast.success(`Round ${currentRound} scores saved successfully!`)
 			
-			// Clear all inputs
+			// Clear all inputs and state
 			activePlayers.forEach(player => {
 				const input = scoreRefs.current[player.id]
 				if (input) input.value = ''
 			})
+			setScores({})
 			
 			// Close modal
 			onClose()
@@ -111,12 +126,12 @@ export default function ScoreEntryModal({ isOpen, onClose }: ScoreEntryModalProp
 
 	const activePlayers = players.filter(p => !p.isEliminated)
 	const allScoresEntered = activePlayers.every(player => {
-		const input = scoreRefs.current[player.id]
-		return input?.value && input.value.trim() !== ''
+		const score = scores[player.id]
+		return score && score.trim() !== ''
 	})
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onClose}>
+		<Dialog open={isOpen} onOpenChange={handleClose}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">

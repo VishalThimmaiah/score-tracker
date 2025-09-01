@@ -30,6 +30,8 @@ interface GameActions {
 	// Game actions
 	addRoundScores: (scores: { playerId: string; score: number }[]) => void
 	resetGame: () => void
+	pauseGame: () => void
+	clearScores: () => void
 
 	// Utility actions
 	getPlayerById: (id: string) => Player | undefined
@@ -128,6 +130,25 @@ export const useGameStore = create<GameStore>()(
 
 			resetGame: () => {
 				set(initialState)
+			},
+
+			pauseGame: () => {
+				set((state) => ({
+					gameStatus: 'setup'
+				}))
+			},
+
+			clearScores: () => {
+				set((state) => ({
+					players: state.players.map(player => ({
+						...player,
+						scores: [],
+						totalScore: 0,
+						isEliminated: false
+					})),
+					currentRound: 0,
+					gameStatus: 'setup'
+				}))
 			},
 
 			// Utility actions
