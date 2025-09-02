@@ -18,20 +18,34 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, i
 	// Calculate score percentage for color coding
 	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
 	
-	// Determine background color based on score percentage
+	// Determine background color based on game mode
 	const getBackgroundColor = () => {
 		if (player.isEliminated) {
 			return 'bg-gray-800 dark:bg-gray-700 text-white border-gray-700 dark:border-gray-600'
 		}
 		
-		if (scorePercentage < 25) {
-			return 'bg-green-100 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-300 dark:border-green-700'
-		} else if (scorePercentage < 50) {
-			return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100 border-yellow-300 dark:border-yellow-700'
-		} else if (scorePercentage < 75) {
-			return 'bg-orange-100 dark:bg-orange-900/30 text-orange-900 dark:text-orange-100 border-orange-300 dark:border-orange-700'
+		if (gameMode === 'points-based') {
+			// Points-based: Use score percentage logic
+			if (scorePercentage < 25) {
+				return 'bg-green-100 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-300 dark:border-green-700'
+			} else if (scorePercentage < 50) {
+				return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100 border-yellow-300 dark:border-yellow-700'
+			} else if (scorePercentage < 75) {
+				return 'bg-orange-100 dark:bg-orange-900/30 text-orange-900 dark:text-orange-100 border-orange-300 dark:border-orange-700'
+			} else {
+				return 'bg-red-100 dark:bg-red-900/30 text-red-900 dark:text-red-100 border-red-300 dark:border-red-700'
+			}
 		} else {
-			return 'bg-red-100 dark:bg-red-900/30 text-red-900 dark:text-red-100 border-red-300 dark:border-red-700'
+			// Rounds-based: Use rank-based logic
+			if (rank === 1) {
+				return 'bg-green-100 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-300 dark:border-green-700'
+			} else if (rank === 2) {
+				return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100 border-yellow-300 dark:border-yellow-700'
+			} else if (rank === 3) {
+				return 'bg-orange-100 dark:bg-orange-900/30 text-orange-900 dark:text-orange-100 border-orange-300 dark:border-orange-700'
+			} else {
+				return 'bg-gray-100 dark:bg-gray-900/30 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700'
+			}
 		}
 	}
 
@@ -50,14 +64,28 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, i
 			return 'bg-gray-600 dark:bg-gray-500 text-white'
 		}
 		
-		if (scorePercentage < 25) {
-			return 'bg-green-600 dark:bg-green-500 text-white'
-		} else if (scorePercentage < 50) {
-			return 'bg-yellow-600 dark:bg-yellow-500 text-white'
-		} else if (scorePercentage < 75) {
-			return 'bg-orange-600 dark:bg-orange-500 text-white'
+		if (gameMode === 'points-based') {
+			// Points-based: Use score percentage logic
+			if (scorePercentage < 25) {
+				return 'bg-green-600 dark:bg-green-500 text-white'
+			} else if (scorePercentage < 50) {
+				return 'bg-yellow-600 dark:bg-yellow-500 text-white'
+			} else if (scorePercentage < 75) {
+				return 'bg-orange-600 dark:bg-orange-500 text-white'
+			} else {
+				return 'bg-red-600 dark:bg-red-500 text-white'
+			}
 		} else {
-			return 'bg-red-600 dark:bg-red-500 text-white'
+			// Rounds-based: Use rank-based logic
+			if (rank === 1) {
+				return 'bg-green-600 dark:bg-green-500 text-white'
+			} else if (rank === 2) {
+				return 'bg-yellow-600 dark:bg-yellow-500 text-white'
+			} else if (rank === 3) {
+				return 'bg-orange-600 dark:bg-orange-500 text-white'
+			} else {
+				return 'bg-gray-600 dark:bg-gray-500 text-white'
+			}
 		}
 	}
 
@@ -67,14 +95,28 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, i
 			return 'bg-gray-700 dark:bg-gray-600 text-white'
 		}
 		
-		if (scorePercentage < 25) {
-			return 'bg-purple-600 dark:bg-purple-500 text-white'
-		} else if (scorePercentage < 50) {
-			return 'bg-indigo-600 dark:bg-indigo-500 text-white'
-		} else if (scorePercentage < 75) {
-			return 'bg-blue-600 dark:bg-blue-500 text-white'
+		if (gameMode === 'points-based') {
+			// Points-based: Use score percentage logic
+			if (scorePercentage < 25) {
+				return 'bg-purple-600 dark:bg-purple-500 text-white'
+			} else if (scorePercentage < 50) {
+				return 'bg-indigo-600 dark:bg-indigo-500 text-white'
+			} else if (scorePercentage < 75) {
+				return 'bg-blue-600 dark:bg-blue-500 text-white'
+			} else {
+				return 'bg-violet-600 dark:bg-violet-500 text-white'
+			}
 		} else {
-			return 'bg-violet-600 dark:bg-violet-500 text-white'
+			// Rounds-based: Use rank-based logic with different colors from dealer
+			if (rank === 1) {
+				return 'bg-purple-600 dark:bg-purple-500 text-white'
+			} else if (rank === 2) {
+				return 'bg-indigo-600 dark:bg-indigo-500 text-white'
+			} else if (rank === 3) {
+				return 'bg-blue-600 dark:bg-blue-500 text-white'
+			} else {
+				return 'bg-gray-700 dark:bg-gray-600 text-white'
+			}
 		}
 	}
 
