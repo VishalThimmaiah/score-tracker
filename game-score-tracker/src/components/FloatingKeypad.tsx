@@ -45,8 +45,11 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 
 	return (
 		<>
-			{/* Backdrop */}
-			<div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm animate-in fade-in-0 duration-200" />
+			{/* Backdrop - Click to close */}
+			<div 
+				className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm animate-in fade-in-0 duration-200 cursor-pointer" 
+				onClick={onCancel}
+			/>
 			
 			{/* Keypad */}
 			<div
