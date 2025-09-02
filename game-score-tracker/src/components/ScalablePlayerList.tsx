@@ -31,23 +31,23 @@ const PlayerRow = memo(({ player, score, isCompleted, onScoreClick }: PlayerRowP
 	return (
 		<Card className={`transition-all duration-200 ${
 			isCompleted 
-				? 'border-green-300 bg-green-50' 
-				: 'border-gray-200 hover:border-gray-300'
+				? 'border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-900/20' 
+				: 'border hover:border-border/80'
 		}`}>
 			<CardContent className="p-3">
 				<div className="flex items-center justify-between">
 					{/* Player Info */}
 					<div className="flex items-center gap-3 flex-1 min-w-0">
 						<div className="flex-shrink-0">
-							<div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-								<User className="h-4 w-4 text-blue-600" />
+							<div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+								<User className="h-4 w-4 text-muted-foreground" />
 							</div>
 						</div>
 						<div className="min-w-0 flex-1">
-							<h3 className="font-medium text-gray-900 truncate">
+							<h3 className="font-medium text-foreground truncate">
 								{player.name}
 							</h3>
-							<p className="text-sm text-gray-500">
+							<p className="text-sm text-muted-foreground">
 								Total: {player.totalScore}
 							</p>
 						</div>
@@ -61,15 +61,15 @@ const PlayerRow = memo(({ player, score, isCompleted, onScoreClick }: PlayerRowP
 							onClick={handleScoreClick}
 							className={`min-w-[80px] h-10 text-base font-medium ${
 								isCompleted 
-									? 'border-green-400 bg-green-50 text-green-700' 
-									: 'border-gray-300 hover:border-blue-400'
+									? 'border-green-400 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-900/20 dark:text-green-400' 
+									: 'hover:border-primary/50'
 							}`}
 						>
 							{score || '--'}
 						</Button>
 						{isCompleted && (
 							<div className="flex-shrink-0">
-								<Check className="h-4 w-4 text-green-600" />
+								<Check className="h-4 w-4 text-green-600 dark:text-green-400" />
 							</div>
 						)}
 					</div>
@@ -109,14 +109,14 @@ export function ScalablePlayerList({
 	return (
 		<div className={`space-y-3 ${className}`}>
 			{/* Progress Header */}
-			<div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 pb-3 mb-3 z-10">
-				<div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+			<div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b pb-3 mb-3 z-10">
+				<div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
 					<span>Progress: {completedCount} of {activePlayers.length} players</span>
 					<span>{Math.round(completionPercentage)}% complete</span>
 				</div>
-				<div className="w-full bg-gray-200 rounded-full h-2">
+				<div className="w-full bg-muted rounded-full h-2">
 					<div 
-						className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+						className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
 						style={{ width: `${completionPercentage}%` }}
 					/>
 				</div>
@@ -142,13 +142,13 @@ export function ScalablePlayerList({
 
 			{/* Large Player Count Helper */}
 			{activePlayers.length > 8 && (
-				<div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-					<div className="flex items-center gap-2 text-sm text-blue-700">
-						<div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-							<span className="text-xs text-white font-bold">!</span>
+				<div className="mt-4 p-3 bg-muted/50 rounded-lg border">
+					<div className="flex items-center gap-2 text-sm text-muted-foreground">
+						<div className="w-4 h-4 bg-muted-foreground rounded-full flex items-center justify-center">
+							<span className="text-xs text-background font-bold">!</span>
 						</div>
 						<span>
-							{`Large group detected ({activePlayers.length} players). 
+							{`Large group detected (${activePlayers.length} players). 
 							Tap any player's score button to enter their score quickly.`}
 						</span>
 					</div>
@@ -157,9 +157,9 @@ export function ScalablePlayerList({
 
 			{/* Empty State */}
 			{activePlayers.length === 0 && (
-				<div className="text-center py-8 text-gray-500">
-					<User className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-					<p>No active players found</p>
+				<div className="text-center py-8 text-muted-foreground">
+					<User className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+					<p className="text-foreground">No active players found</p>
 					<p className="text-sm">Add players to start scoring</p>
 				</div>
 			)}

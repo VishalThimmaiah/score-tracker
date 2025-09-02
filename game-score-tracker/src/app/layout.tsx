@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,12 +16,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Game Score Tracker - Card Game Scoring Made Simple",
+  title: "Deck Master - Card Game Scoring Made Simple",
   description: "Track scores for card games like 5 Cards, Secret 7, and custom variants. Simple, elegant scoring with player elimination and game history.",
-  keywords: ["card games", "score tracker", "5 cards", "secret 7", "game scoring", "multiplayer games"],
-  authors: [{ name: "Game Score Tracker" }],
-  creator: "Game Score Tracker",
-  publisher: "Game Score Tracker",
+  keywords: ["card games", "score tracker", "5 cards", "secret 7", "game scoring", "multiplayer games", "deck master"],
+  authors: [{ name: "Deck Master" }],
+  creator: "Deck Master",
+  publisher: "Deck Master",
   formatDetection: {
     email: false,
     address: false,
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
   openGraph: {
-    title: "Game Score Tracker - Card Game Scoring Made Simple",
+    title: "Deck Master - Card Game Scoring Made Simple",
     description: "Track scores for card games like 5 Cards, Secret 7, and custom variants. Simple, elegant scoring with player elimination and game history.",
     type: "website",
     locale: "en_US",
@@ -40,17 +41,17 @@ export const metadata: Metadata = {
         url: "/logo.png",
         width: 126,
         height: 122,
-        alt: "Game Score Tracker Logo",
+        alt: "Deck Master Logo",
       },
     ],
   },
   twitter: {
     card: "summary",
-    title: "Game Score Tracker - Card Game Scoring Made Simple",
+    title: "Deck Master - Card Game Scoring Made Simple",
     description: "Track scores for card games like 5 Cards, Secret 7, and custom variants. Simple, elegant scoring with player elimination and game history.",
     images: ["/logo.png"],
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://scoretracker.vishalthimmaiah.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://deckmaster.vishalthimmaiah.com'),
   robots: {
     index: true,
     follow: true,
@@ -80,10 +81,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
-        <Toaster position="top-center" richColors />
+        <ThemeProvider>
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+          <Toaster position="top-center" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

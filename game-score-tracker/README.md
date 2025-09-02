@@ -1,4 +1,4 @@
-# Game Score Tracker
+# Deck Master
 
 A modern, responsive web application for tracking scores in card games like 5 Cards, Secret 7, and custom variants. Built with Next.js 15, TypeScript, and Tailwind CSS.
 

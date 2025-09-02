@@ -3,6 +3,7 @@
 import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ThemeToggle } from './ThemeToggle'
 import { ArrowLeft, Trophy, Users, Target } from 'lucide-react'
 
 interface GameHistoryProps {
@@ -33,21 +34,24 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 	})
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+		<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
 			<div className="max-w-4xl mx-auto space-y-4">
 				{/* Header */}
-				<div className="flex items-center gap-4 py-4">
+				<div className="flex items-center justify-between py-4">
 					<Button 
 						variant="outline" 
 						size="icon"
 						onClick={onBack}
-						className="shrink-0"
+						className="h-8 w-8"
 					>
 						<ArrowLeft className="h-4 w-4" />
 					</Button>
-					<div>
-						<h1 className="text-2xl font-bold text-gray-900">Game History</h1>
-						<p className="text-gray-600">Round-by-round score breakdown</p>
+					<div className="flex-1 text-center">
+						<h1 className="text-2xl font-bold text-foreground">Game History</h1>
+						<p className="text-sm text-muted-foreground">Round-by-round score breakdown</p>
+					</div>
+					<div className="w-8">
+						<ThemeToggle />
 					</div>
 				</div>
 
@@ -62,26 +66,26 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 					<CardContent>
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
 							<div>
-								<span className="text-gray-600 flex items-center gap-1">
+								<span className="text-muted-foreground flex items-center gap-1">
 									<Users className="h-4 w-4" />
 									Players:
 								</span>
-								<div className="font-semibold">{players.length}</div>
+								<div className="font-semibold text-foreground">{players.length}</div>
 							</div>
 							<div>
-								<span className="text-gray-600 flex items-center gap-1">
+								<span className="text-muted-foreground flex items-center gap-1">
 									<Target className="h-4 w-4" />
 									Target Score:
 								</span>
-								<div className="font-semibold">{gameSettings.eliminationScore}</div>
+								<div className="font-semibold text-foreground">{gameSettings.eliminationScore}</div>
 							</div>
 							<div>
-								<span className="text-gray-600">Rounds Played:</span>
-								<div className="font-semibold">{maxRounds}</div>
+								<span className="text-muted-foreground">Rounds Played:</span>
+								<div className="font-semibold text-foreground">{maxRounds}</div>
 							</div>
 							<div>
-								<span className="text-gray-600">Status:</span>
-								<div className="font-semibold capitalize">
+								<span className="text-muted-foreground">Status:</span>
+								<div className="font-semibold text-foreground capitalize">
 									{gameStatus === 'finished' ? 'Completed' : 'In Progress'}
 								</div>
 							</div>
@@ -99,10 +103,10 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 							<div className="overflow-x-auto">
 								<table className="w-full">
 									<thead>
-										<tr className="border-b bg-gray-50">
-											<th className="text-left p-3 font-semibold">Round</th>
+										<tr className="border-b bg-muted">
+											<th className="text-left p-3 font-semibold text-foreground">Round</th>
 											{players.map(player => (
-												<th key={player.id} className="text-center p-3 font-semibold min-w-24">
+												<th key={player.id} className="text-center p-3 font-semibold min-w-24 text-foreground">
 													{player.name}
 												</th>
 											))}
@@ -110,8 +114,8 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 									</thead>
 									<tbody>
 										{rounds.map(round => (
-											<tr key={round.round} className="border-b hover:bg-gray-50">
-												<td className="p-3 font-medium">
+											<tr key={round.round} className="border-b hover:bg-muted">
+												<td className="p-3 font-medium text-foreground">
 													Round {round.round}
 												</td>
 												{round.players.map(playerData => {
@@ -123,19 +127,19 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 															<div className="space-y-1">
 																{/* Round Score */}
 																<div className={`text-lg font-semibold ${
-																	isEliminated ? 'text-gray-500' : 'text-gray-900'
+																	isEliminated ? 'text-muted-foreground' : 'text-foreground'
 																}`}>
 																	+{playerData.score}
 																</div>
 																{/* Running Total */}
 																<div className={`text-xs ${
-																	isEliminated ? 'text-gray-400' : 'text-gray-600'
+																	isEliminated ? 'text-muted-foreground/80' : 'text-muted-foreground'
 																}`}>
 																	Total: {playerData.runningTotal}
 																</div>
 																{/* Elimination Indicator */}
 																{wasEliminatedThisRound && (
-																	<div className="text-xs text-red-600 font-medium">
+																	<div className="text-xs text-red-600 dark:text-red-400 font-medium">
 																		💀 Eliminated
 																	</div>
 																)}
@@ -152,10 +156,10 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 					</Card>
 				) : (
 					<Card>
-						<CardContent className="p-8 text-center text-gray-500">
+						<CardContent className="p-8 text-center text-muted-foreground">
 							<div className="space-y-2">
 								<div className="text-4xl">📊</div>
-								<p className="text-lg font-medium">No rounds played yet</p>
+								<p className="text-lg font-medium text-foreground">No rounds played yet</p>
 								<p className="text-sm">Start adding scores to see the history here</p>
 							</div>
 						</CardContent>
@@ -184,19 +188,19 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 											key={player.id}
 											className={`flex items-center justify-between p-3 rounded-lg ${
 												player.isEliminated 
-													? 'bg-gray-100 text-gray-600' 
+													? 'bg-muted text-muted-foreground' 
 													: index === 0 && gameStatus === 'finished'
-														? 'bg-yellow-100 text-yellow-900 border border-yellow-300'
-														: 'bg-white border'
+														? 'bg-yellow-100 text-yellow-900 border border-yellow-300 dark:bg-yellow-900 dark:text-yellow-100 dark:border-yellow-600'
+														: 'bg-card border'
 											}`}
 										>
 											<div className="flex items-center gap-3">
 												<div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
 													index === 0 && gameStatus === 'finished' && !player.isEliminated
-														? 'bg-yellow-500 text-white'
+														? 'bg-yellow-500 text-white dark:bg-yellow-600'
 														: player.isEliminated
-															? 'bg-gray-400 text-white'
-															: 'bg-blue-500 text-white'
+															? 'bg-muted-foreground/50 text-background'
+															: 'bg-primary text-primary-foreground'
 												}`}>
 													{index === 0 && gameStatus === 'finished' && !player.isEliminated ? (
 														<Trophy className="h-4 w-4" />
