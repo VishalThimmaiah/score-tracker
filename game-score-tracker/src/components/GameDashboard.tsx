@@ -46,7 +46,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 
 
 	return (
-		<div className="min-h-screen bg-blue-50 dark:bg-black p-4">
+		<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
 			<div className="max-w-md mx-auto space-y-4">
 				{/* Header */}
 				<div className="relative text-center py-4">
@@ -66,9 +66,9 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 					
 					<div className="flex items-center justify-center gap-2 mb-1">
 						<Image src="/logo.png" alt="Game Score Tracker" width={32} height={32} className="w-8 h-8" />
-						<h1 className="text-2xl font-bold text-gray-900 dark:text-white">Game Score Tracker</h1>
+						<h1 className="text-2xl font-bold text-foreground">Game Score Tracker</h1>
 					</div>
-					<div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+					<div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
 						<span className="flex items-center gap-1">
 							<Users className="h-4 w-4" />
 							{activePlayers.length} active
@@ -154,27 +154,27 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				</div>
 
 				{/* Game Stats */}
-				<Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+				<Card className="bg-card/50 backdrop-blur-sm">
 					<CardHeader className="pb-3">
-						<CardTitle className="text-lg dark:text-white">Game Statistics</CardTitle>
+						<CardTitle className="text-lg text-foreground">Game Statistics</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-2">
 						<div className="grid grid-cols-2 gap-4 text-sm">
 							<div>
-								<span className="text-gray-600 dark:text-gray-400">Rounds Played:</span>
-								<div className="font-semibold dark:text-white">{Math.max(0, currentRound - 1)}</div>
+								<span className="text-muted-foreground">Rounds Played:</span>
+								<div className="font-semibold text-foreground">{Math.max(0, currentRound - 1)}</div>
 							</div>
 							<div>
-								<span className="text-gray-600 dark:text-gray-400">Active Players:</span>
-								<div className="font-semibold dark:text-white">{activePlayers.length}</div>
+								<span className="text-muted-foreground">Active Players:</span>
+								<div className="font-semibold text-foreground">{activePlayers.length}</div>
 							</div>
 							<div>
-								<span className="text-gray-600 dark:text-gray-400">Eliminated:</span>
-								<div className="font-semibold dark:text-white">{players.length - activePlayers.length}</div>
+								<span className="text-muted-foreground">Eliminated:</span>
+								<div className="font-semibold text-foreground">{players.length - activePlayers.length}</div>
 							</div>
 							<div>
-								<span className="text-gray-600 dark:text-gray-400">Leader:</span>
-								<div className="font-semibold dark:text-white">
+								<span className="text-muted-foreground">Leader:</span>
+								<div className="font-semibold text-foreground">
 									{sortedPlayers.find(p => !p.isEliminated)?.name || 'None'}
 								</div>
 							</div>
@@ -184,7 +184,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 
 				{/* Instructions */}
 				{gameStatus === 'playing' && currentRound === 1 && (
-					<div className="text-center text-sm text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+					<div className="text-center text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
 						<p>Tap &quot;Add Round Scores&quot; to enter points for each player.</p>
 						<p>Lower scores are better • Players eliminated at {gameSettings.eliminationScore} points</p>
 					</div>

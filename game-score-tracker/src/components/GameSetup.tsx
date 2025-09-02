@@ -62,7 +62,7 @@ export default function GameSetup() {
 	}
 
 	return (
-		<div className="min-h-screen bg-blue-50 dark:bg-black p-4">
+		<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
 			<div className="max-w-md mx-auto space-y-6">
 				{/* Header */}
 				<div className="text-center py-6 relative">
@@ -73,9 +73,9 @@ export default function GameSetup() {
 					
 					<div className="flex items-center justify-center gap-3 mb-2">
 						<Image src="/logo.png" alt="Game Score Tracker" width={40} height={40} className="w-10 h-10" />
-						<h1 className="text-3xl font-bold text-gray-900 dark:text-white">Game Score Tracker</h1>
+						<h1 className="text-3xl font-bold text-foreground">Game Score Tracker</h1>
 					</div>
-					<p className="text-gray-600 dark:text-gray-300">Set up your card game session</p>
+					<p className="text-muted-foreground">Set up your card game session</p>
 					<div className="mt-4">
 						<QRCodeWithLogo />
 					</div>
@@ -146,13 +146,13 @@ export default function GameSetup() {
 								{players.map((player, index) => (
 									<div 
 										key={player.id}
-										className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+										className="flex items-center justify-between p-3 bg-muted rounded-lg"
 									>
 										<div className="flex items-center gap-3">
-											<div className="w-8 h-8 bg-blue-500 dark:bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+											<div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
 												{index + 1}
 											</div>
-											<span className="font-medium dark:text-white">{player.name}</span>
+											<span className="font-medium text-foreground">{player.name}</span>
 										</div>
 										<Button
 											variant="ghost"
@@ -194,7 +194,7 @@ export default function GameSetup() {
 				</Button>
 
 				{/* Game Info */}
-				<div className="text-center text-sm text-gray-500 dark:text-gray-400 space-y-1">
+				<div className="text-center text-sm text-muted-foreground space-y-1">
 					<p>Perfect for: 5 Cards, Secret 7, and custom variants</p>
 					<p>Lowest score wins • Manual scoring</p>
 				</div>
