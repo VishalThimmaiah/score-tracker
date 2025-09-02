@@ -30,8 +30,6 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 	onCancel,
 	onMultiply
 }: FloatingKeypadProps) {
-	if (!isVisible) return null
-
 	const keypadButtons = [
 		['7', '8', '9'],
 		['4', '5', '6'],
@@ -42,6 +40,8 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 	const handleNumberPress = useCallback((digit: string) => {
 		onNumberPress(digit)
 	}, [onNumberPress])
+
+	if (!isVisible) return null
 
 	return (
 		<div
@@ -78,7 +78,7 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 					{/* Number Grid - 4x3 Grid Layout */}
 					<div className="grid grid-cols-3 gap-2 mb-4">
 						{/* First 3 rows of numbers */}
-						{keypadButtons.map((row, rowIndex) => 
+						{keypadButtons.map((row) => 
 							row.map((digit) => (
 								<Button
 									key={digit}
