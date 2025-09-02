@@ -56,8 +56,9 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 	})
 
 	const handlePlayerScoreClick = useCallback((playerId: string, targetElement: HTMLElement) => {
-		showKeypad(playerId, targetElement)
-	}, [showKeypad])
+		const currentScore = scores[playerId] || ''
+		showKeypad(playerId, targetElement, currentScore)
+	}, [showKeypad, scores])
 
 	const handleClose = useCallback(() => {
 		hideKeypad()
@@ -139,19 +140,8 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 			<div className="border-b border-gray-200 bg-white flex-shrink-0">
 				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex items-center justify-between h-16">
-						{/* <div className="flex items-center gap-4"> // not needed
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={handleClose}
-								className="flex items-center gap-2"
-								disabled={keypadVisible}
-							>
-								<ArrowLeft className="h-4 w-4" />
-								Back to Game
-							</Button>
-						</div>
-						 */}
+						<div className="w-10"></div> {/* Spacer for centering */}
+						
 						<div className="text-center">
 							<h1 className="text-xl font-semibold text-gray-900">
 								Round {currentRound} Score Entry

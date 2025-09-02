@@ -64,7 +64,7 @@ export function FloatingKeypad({
 					{/* Display */}
 					<div className="mb-3 p-2 bg-gray-50 rounded border text-center">
 						<div className="text-lg font-mono font-semibold text-gray-900 min-h-[28px]">
-							{currentValue || '0'}
+							{currentValue || '--'}
 						</div>
 					</div>
 
@@ -111,16 +111,12 @@ export function FloatingKeypad({
 							size="sm"
 							onClick={onConfirm}
 							className="flex-1 h-8 bg-blue-600 hover:bg-blue-700"
-							disabled={!currentValue}
+							disabled={currentValue === ''}
 						>
 							<Check className="h-3 w-3" />
 						</Button>
 					</div>
 
-					{/* Quick Tips */}
-					<div className="mt-2 text-xs text-gray-500 text-center">
-						Press Enter to confirm • Esc to cancel
-					</div>
 				</CardContent>
 			</Card>
 		</div>

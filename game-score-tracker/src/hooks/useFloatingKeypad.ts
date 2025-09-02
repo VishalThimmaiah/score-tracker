@@ -26,10 +26,18 @@ export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypa
 		const keypadWidth = 200
 		const keypadHeight = 240
 		const padding = 16
+		const viewportHeight = window.innerHeight
 
-		// Try to position keypad to the right of the target
+		// Calculate if target is in lower half of screen
+		const isInLowerHalf = rect.top > viewportHeight / 2
+
 		let x = rect.right + padding
 		let y = rect.top
+
+		// If target is in lower half, try to position keypad above it
+		if (isInLowerHalf) {
+			y = rect.top - keypadHeight - padding
+		}
 
 		// If keypad would go off right edge, position to the left
 		if (x + keypadWidth > containerRect.right) {
@@ -41,11 +49,12 @@ export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypa
 			x = Math.max(padding, (containerRect.width - keypadWidth) / 2)
 		}
 
-		// Ensure keypad stays within vertical bounds
-		if (y + keypadHeight > containerRect.bottom) {
-			y = containerRect.bottom - keypadHeight - padding
+		// Ensure keypad stays within vertical bounds with better viewport awareness
+		const minBottomPadding = 60 // Extra padding from bottom for mobile keyboards
+		if (y + keypadHeight > viewportHeight - minBottomPadding) {
+			y = viewportHeight - keypadHeight - minBottomPadding
 		}
-		if (y < containerRect.top) {
+		if (y < containerRect.top + padding) {
 			y = containerRect.top + padding
 		}
 
@@ -56,11 +65,11 @@ export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypa
 		}
 	}, [])
 
-	const showKeypad = useCallback((playerId: string, targetElement: HTMLElement) => {
+	const showKeypad = useCallback((playerId: string, targetElement: HTMLElement, currentScore?: string) => {
 		const optimalPosition = calculateOptimalPosition(targetElement)
 		setPosition(optimalPosition)
 		setActivePlayerId(playerId)
-		setCurrentValue('')
+		setCurrentValue(currentScore || '')
 		setIsVisible(true)
 	}, [calculateOptimalPosition])
 
@@ -71,11 +80,7 @@ export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypa
 	}, [])
 
 	const handleNumberPress = useCallback((digit: string) => {
-		setCurrentValue(prev => {
-			const newValue = prev + digit
-			// Limit to 3 digits for reasonable score ranges
-			return newValue.length <= 3 ? newValue : prev
-		})
+		setCurrentValue(prev => prev + digit)
 	}, [])
 
 	const handleBackspace = useCallback(() => {
@@ -87,7 +92,7 @@ export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypa
 	}, [])
 
 	const handleConfirm = useCallback(() => {
-		if (currentValue && activePlayerId) {
+		if (currentValue !== '' && activePlayerId) {
 			const score = parseInt(currentValue, 10)
 			if (!isNaN(score) && score >= 0) {
 				onScoreEntered(activePlayerId, score)
