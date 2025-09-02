@@ -2,12 +2,12 @@
 
 import { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useGameStore } from '@/store/gameStore'
+import { useGameStore, GameType, GameMode } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Users, Target, GripVertical, Play } from 'lucide-react'
+import { Plus, Trash2, Users, Target, GripVertical, Play, Gamepad2, Clock, Settings } from 'lucide-react'
 import QRCodeWithLogo from './QRCodeWithLogo'
 import { ThemeToggle } from './ThemeToggle'
 import {
@@ -98,7 +98,10 @@ export default function GameSetup() {
 		removePlayer, 
 		setPlayerOrder,
 		setCurrentPickerIndex,
-		setEliminationScore, 
+		setEliminationScore,
+		setGameType,
+		setGameMode,
+		setMaxRounds,
 		startGame 
 	} = useGameStore()
 
@@ -163,9 +166,29 @@ export default function GameSetup() {
 	}
 
 	const isValidEliminationScore = () => {
+		// For rounds-based games, elimination score is not relevant
+		if (gameSettings.gameMode === 'rounds-based') {
+			return true
+		}
+		
 		const eliminationScore = eliminationScoreRef.current?.value
 		const scoreValue = eliminationScore ? Number(eliminationScore) : gameSettings.lastEliminationScore
 		return scoreValue > 0
+	}
+
+	const isValidGameSettings = () => {
+		// Check if elimination score is valid for points-based games
+		if (gameSettings.gameMode === 'points-based' && !isValidEliminationScore()) {
+			return false
+		}
+		
+		// Check if max rounds is valid for rounds-based games
+		if (gameSettings.gameMode === 'rounds-based') {
+			const maxRounds = gameSettings.maxRounds || 7
+			return maxRounds > 0
+		}
+		
+		return true
 	}
 
 	const handleDragEnd = (event: DragEndEvent) => {
@@ -200,37 +223,6 @@ export default function GameSetup() {
 				<div className="text-center">
 					<QRCodeWithLogo />
 				</div>
-
-				{/* Game Settings */}
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Target className="h-5 w-5" />
-							Game Settings
-						</CardTitle>
-						<CardDescription>
-							Configure your game parameters
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div>
-							<Label htmlFor="elimination-score">Elimination Score</Label>
-							<Input
-								id="elimination-score"
-								ref={eliminationScoreRef}
-								type="number"
-								defaultValue={gameSettings.lastEliminationScore}
-								min={1}
-								max={500}
-								step={10}
-								className="mt-1"
-							/>
-							<p className="text-sm text-gray-500 mt-1">
-								Players are eliminated when they reach this score (must be greater than 0)
-							</p>
-						</div>
-					</CardContent>
-				</Card>
 
 				{/* Add Players */}
 				<Card>
@@ -291,6 +283,167 @@ export default function GameSetup() {
 					</CardContent>
 				</Card>
 
+				{/* Game Type & Settings */}
+				{players.length >= 2 && (
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<Gamepad2 className="h-5 w-5" />
+								Game Type & Settings
+							</CardTitle>
+							<CardDescription>
+								Choose your game variant and configure settings
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							{/* Game Type Options */}
+							<div className="space-y-3">
+								<label className="flex items-start gap-3 p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors">
+									<input
+										type="radio"
+										name="gameType"
+										value="5-cards"
+										checked={gameSettings.gameType === '5-cards'}
+										onChange={() => setGameType('5-cards')}
+										className="w-4 h-4 text-primary mt-1"
+									/>
+									<div className="flex-1">
+										<div className="flex items-center gap-2 mb-1">
+											<Target className="h-4 w-4" />
+											<span className="font-medium text-foreground">5 Cards</span>
+										</div>
+										<p className="text-sm text-muted-foreground">
+											Points-based elimination • Players eliminated at score limit
+										</p>
+									</div>
+								</label>
+
+								<label className="flex items-start gap-3 p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors">
+									<input
+										type="radio"
+										name="gameType"
+										value="secret-7"
+										checked={gameSettings.gameType === 'secret-7'}
+										onChange={() => setGameType('secret-7')}
+										className="w-4 h-4 text-primary mt-1"
+									/>
+									<div className="flex-1">
+										<div className="flex items-center gap-2 mb-1">
+											<Clock className="h-4 w-4" />
+											<span className="font-medium text-foreground">Secret 7</span>
+										</div>
+										<p className="text-sm text-muted-foreground">
+											Fixed 7 rounds • No elimination • Lowest score wins
+										</p>
+									</div>
+								</label>
+
+								<label className="flex items-start gap-3 p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors">
+									<input
+										type="radio"
+										name="gameType"
+										value="custom"
+										checked={gameSettings.gameType === 'custom'}
+										onChange={() => setGameType('custom')}
+										className="w-4 h-4 text-primary mt-1"
+									/>
+									<div className="flex-1">
+										<div className="flex items-center gap-2 mb-1">
+											<Settings className="h-4 w-4" />
+											<span className="font-medium text-foreground">Custom</span>
+										</div>
+										<p className="text-sm text-muted-foreground">
+											Choose between points-based or rounds-based rules
+										</p>
+									</div>
+								</label>
+							</div>
+
+							{/* Custom Game Mode Selection */}
+							{gameSettings.gameType === 'custom' && (
+								<div className="space-y-3 pt-2 border-t">
+									<Label className="text-sm font-medium">Game Mode</Label>
+									<div className="space-y-2">
+										<label className="flex items-center gap-3 p-2 bg-background rounded cursor-pointer hover:bg-muted/50 transition-colors">
+											<input
+												type="radio"
+												name="gameMode"
+												value="points-based"
+												checked={gameSettings.gameMode === 'points-based'}
+												onChange={() => setGameMode('points-based')}
+												className="w-4 h-4 text-primary"
+											/>
+											<span className="text-sm">Points-based (with elimination)</span>
+										</label>
+										<label className="flex items-center gap-3 p-2 bg-background rounded cursor-pointer hover:bg-muted/50 transition-colors">
+											<input
+												type="radio"
+												name="gameMode"
+												value="rounds-based"
+												checked={gameSettings.gameMode === 'rounds-based'}
+												onChange={() => setGameMode('rounds-based')}
+												className="w-4 h-4 text-primary"
+											/>
+											<span className="text-sm">Rounds-based (fixed rounds)</span>
+										</label>
+									</div>
+
+									{/* Custom Rounds Input */}
+									{gameSettings.gameMode === 'rounds-based' && (
+										<div>
+											<Label htmlFor="max-rounds" className="text-sm">Number of Rounds</Label>
+											<Input
+												id="max-rounds"
+												type="number"
+												defaultValue={gameSettings.maxRounds || 7}
+												min={1}
+												max={20}
+												onChange={(e) => setMaxRounds(Number(e.target.value))}
+												className="mt-1"
+											/>
+										</div>
+									)}
+								</div>
+							)}
+
+							{/* Elimination Score - Only show for points-based games */}
+							{gameSettings.gameMode === 'points-based' && (
+								<div className="space-y-3 pt-2 border-t">
+									<Label htmlFor="elimination-score" className="text-sm font-medium">Elimination Score</Label>
+									<Input
+										id="elimination-score"
+										ref={eliminationScoreRef}
+										type="number"
+										defaultValue={gameSettings.lastEliminationScore}
+										min={1}
+										step={10}
+										className="mt-1"
+									/>
+									<p className="text-sm text-muted-foreground">
+										Players are eliminated when they reach this score (must be greater than 0)
+									</p>
+								</div>
+							)}
+
+							{/* Game Type Info */}
+							<div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+								{gameSettings.gameType === '5-cards' && (
+									<p>Classic elimination game • Configure elimination score above</p>
+								)}
+								{gameSettings.gameType === 'secret-7' && (
+									<p>Exactly 7 rounds • All players stay active • Winner has lowest total</p>
+								)}
+								{gameSettings.gameType === 'custom' && gameSettings.gameMode === 'points-based' && (
+									<p>Custom elimination game • Configure elimination score above</p>
+								)}
+								{gameSettings.gameType === 'custom' && gameSettings.gameMode === 'rounds-based' && (
+									<p>Custom fixed rounds • All players stay active • Winner has lowest total</p>
+								)}
+							</div>
+						</CardContent>
+					</Card>
+				)}
+
 				{/* Picker Selection */}
 				{players.length >= 2 && (
 					<Card>
@@ -331,17 +484,22 @@ export default function GameSetup() {
 					</Card>
 				)}
 
-				{/* Elimination Score Validation */}
-				{!isValidEliminationScore() && (
+				{/* Game Settings Validation */}
+				{!isValidGameSettings() && (
 					<div className="text-sm text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20 p-2 rounded">
-						Elimination score must be greater than 0 to start the game
+						{gameSettings.gameMode === 'points-based' && !isValidEliminationScore() && (
+							<p>Elimination score must be greater than 0 to start the game</p>
+						)}
+						{gameSettings.gameMode === 'rounds-based' && (!gameSettings.maxRounds || gameSettings.maxRounds <= 0) && (
+							<p>Number of rounds must be greater than 0</p>
+						)}
 					</div>
 				)}
 
 				{/* Start Game Button */}
 				<Button 
 					onClick={handleStartGame}
-					disabled={players.length < 2 || !isValidEliminationScore()}
+					disabled={players.length < 2 || !isValidGameSettings()}
 					className="w-full h-12 text-lg font-semibold"
 					size="lg"
 				>

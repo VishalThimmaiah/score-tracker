@@ -156,6 +156,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							player={player}
 							rank={index + 1}
 							eliminationScore={gameSettings.eliminationScore}
+							gameMode={gameSettings.gameMode}
 							isWinner={gameStatus === 'finished' && winner?.id === player.id}
 							isPicker={player.id === currentPicker?.id}
 							isDealer={player.id === currentDealer?.id}
@@ -174,18 +175,33 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 								<span className="text-muted-foreground">Rounds Played:</span>
 								<div className="font-semibold text-foreground">{Math.max(0, currentRound - 1)}</div>
 							</div>
-							<div>
-								<span className="text-muted-foreground">Active Players:</span>
-								<div className="font-semibold text-foreground">{activePlayers.length}</div>
-							</div>
-							<div>
-								<span className="text-muted-foreground">Eliminated:</span>
-								<div className="font-semibold text-foreground">{players.length - activePlayers.length}</div>
-							</div>
+							{gameSettings.gameMode === 'rounds-based' && (
+								<div>
+									<span className="text-muted-foreground">Total Rounds:</span>
+									<div className="font-semibold text-foreground">
+										{gameSettings.gameType === 'secret-7' ? 7 : (gameSettings.maxRounds || 7)}
+									</div>
+								</div>
+							)}
+							{gameSettings.gameMode === 'points-based' && (
+								<>
+									<div>
+										<span className="text-muted-foreground">Active Players:</span>
+										<div className="font-semibold text-foreground">{activePlayers.length}</div>
+									</div>
+									<div>
+										<span className="text-muted-foreground">Eliminated:</span>
+										<div className="font-semibold text-foreground">{players.length - activePlayers.length}</div>
+									</div>
+								</>
+							)}
 							<div>
 								<span className="text-muted-foreground">Leader:</span>
 								<div className="font-semibold text-foreground">
-									{sortedPlayers.find(p => !p.isEliminated)?.name || 'None'}
+									{gameSettings.gameMode === 'points-based' 
+										? (sortedPlayers.find(p => !p.isEliminated)?.name || 'None')
+										: (sortedPlayers[0]?.name || 'None')
+									}
 								</div>
 							</div>
 						</div>
@@ -196,7 +212,12 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				{gameStatus === 'playing' && currentRound === 1 && (
 					<div className="text-center text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
 						<p>Tap &quot;Add Round Scores&quot; to enter points for each player.</p>
-						<p>Lower scores are better • Players eliminated at {gameSettings.eliminationScore} points</p>
+						{gameSettings.gameMode === 'points-based' && (
+							<p>Lower scores are better • Players eliminated at {gameSettings.eliminationScore} points</p>
+						)}
+						{gameSettings.gameMode === 'rounds-based' && (
+							<p>Lower scores are better • Game lasts {gameSettings.gameType === 'secret-7' ? 7 : (gameSettings.maxRounds || 7)} rounds</p>
+						)}
 					</div>
 				)}
 			</div>

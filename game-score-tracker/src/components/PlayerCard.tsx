@@ -1,6 +1,6 @@
 'use client'
 
-import { Player } from '@/store/gameStore'
+import { Player, GameMode } from '@/store/gameStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Crown, Skull, CircleDot, Play } from 'lucide-react'
 
@@ -8,12 +8,13 @@ interface PlayerCardProps {
 	player: Player
 	rank: number
 	eliminationScore: number
+	gameMode: GameMode
 	isWinner?: boolean
 	isDealer?: boolean
 	isPicker?: boolean
 }
 
-export default function PlayerCard({ player, rank, eliminationScore, isWinner = false, isDealer = false, isPicker = false }: PlayerCardProps) {
+export default function PlayerCard({ player, rank, eliminationScore, gameMode, isWinner = false, isDealer = false, isPicker = false }: PlayerCardProps) {
 	// Calculate score percentage for color coding
 	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
 	
@@ -130,19 +131,21 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 					</div>
 				</div>
 
-				{/* Progress Bar */}
-				<div className="space-y-1">
-					<div className="flex justify-between text-sm opacity-75">
-						<span>Progress to elimination</span>
-						<span>{Math.min(scorePercentage, 100).toFixed(1)}%</span>
+				{/* Progress Bar - Only show for points-based games */}
+				{gameMode === 'points-based' && (
+					<div className="space-y-1">
+						<div className="flex justify-between text-sm opacity-75">
+							<span>Progress to elimination</span>
+							<span>{Math.min(scorePercentage, 100).toFixed(1)}%</span>
+						</div>
+						<div className="w-full bg-white/30 rounded-full h-2">
+							<div 
+								className={`h-2 rounded-full transition-all duration-500 ${getProgressColor()}`}
+								style={{ width: `${Math.min(scorePercentage, 100)}%` }}
+							/>
+						</div>
 					</div>
-					<div className="w-full bg-white/30 rounded-full h-2">
-						<div 
-							className={`h-2 rounded-full transition-all duration-500 ${getProgressColor()}`}
-							style={{ width: `${Math.min(scorePercentage, 100)}%` }}
-						/>
-					</div>
-				</div>
+				)}
 
 				{/* Winner Badge */}
 				{isWinner && (
