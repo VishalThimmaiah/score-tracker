@@ -68,23 +68,21 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							<h1 className="text-2xl font-bold text-foreground">Deck Master</h1>
 
 						</div>
-						<div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
-							{gameStatus !== 'finished' && (
-								<>
-									<span className="flex items-center gap-1">
-										<CircleDot className="h-4 w-4" />
-										Dealer: {currentDealer?.name || 'None'}
-									</span>
-									<span>|</span>
-									<span className="flex items-center gap-1">
-										<Play className="h-4 w-4" />
-										Picker: {currentPicker?.name || 'None'}
-									</span>
-									<span>|</span>
-								</>
-							)}
-							<span>Round: {currentRound}</span>
-						</div>
+						{gameStatus !== 'finished' && (
+							<div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
+								<span className="flex items-center gap-1">
+									<CircleDot className="h-4 w-4" />
+									Dealer: {currentDealer?.name || 'None'}
+								</span>
+								<span>|</span>
+								<span className="flex items-center gap-1">
+									<Play className="h-4 w-4" />
+									Picker: {currentPicker?.name || 'None'}
+								</span>
+								<span>|</span>
+								<span>Round: {currentRound}</span>
+							</div>
+						)}
 					</div>
 					<div className="w-8">
 						<ThemeToggle />
