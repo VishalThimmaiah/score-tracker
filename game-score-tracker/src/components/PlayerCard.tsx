@@ -2,16 +2,17 @@
 
 import { Player } from '@/store/gameStore'
 import { Card, CardContent } from '@/components/ui/card'
-import { Crown, Skull } from 'lucide-react'
+import { Crown, Skull, CircleDot } from 'lucide-react'
 
 interface PlayerCardProps {
 	player: Player
 	rank: number
 	eliminationScore: number
 	isWinner?: boolean
+	isDealer?: boolean
 }
 
-export default function PlayerCard({ player, rank, eliminationScore, isWinner = false }: PlayerCardProps) {
+export default function PlayerCard({ player, rank, eliminationScore, isWinner = false, isDealer = false }: PlayerCardProps) {
 	// Calculate score percentage for color coding
 	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
 	
@@ -59,7 +60,15 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 						
 						{/* Player Name */}
 						<div>
-							<h3 className="font-semibold text-lg">{player.name}</h3>
+							<div className="flex items-center gap-2">
+								<h3 className="font-semibold text-lg">{player.name}</h3>
+								{isDealer && (
+									<div className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white text-xs rounded-full">
+										<CircleDot className="h-3 w-3" />
+										<span>Dealer</span>
+									</div>
+								)}
+							</div>
 							{player.isEliminated && (
 								<div className="flex items-center gap-1 text-sm opacity-75">
 									<Skull className="h-3 w-3" />

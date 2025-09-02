@@ -7,9 +7,83 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Users, Target } from 'lucide-react'
+import { Plus, Trash2, Users, Target, GripVertical } from 'lucide-react'
 import QRCodeWithLogo from './QRCodeWithLogo'
 import { ThemeToggle } from './ThemeToggle'
+import {
+	DndContext,
+	closestCenter,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+	DragEndEvent,
+} from '@dnd-kit/core'
+import {
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+	useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { Player } from '@/store/gameStore'
+
+interface SortablePlayerItemProps {
+	player: Player
+	index: number
+	onRemove: () => void
+}
+
+function SortablePlayerItem({ player, index, onRemove }: SortablePlayerItemProps) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: player.id })
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	}
+
+	return (
+		<div
+			ref={setNodeRef}
+			style={style}
+			className={`flex items-center justify-between p-3 bg-muted rounded-lg ${
+				isDragging ? 'opacity-50' : ''
+			}`}
+		>
+			<div className="flex items-center gap-3">
+				<div
+					{...attributes}
+					{...listeners}
+					className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
+				>
+					<GripVertical className="h-4 w-4" />
+				</div>
+				<div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+					{index + 1}
+				</div>
+				<span className="font-medium text-foreground">{player.name}</span>
+			</div>
+			<Button
+				variant="ghost"
+				size="icon"
+				onClick={onRemove}
+				className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+			>
+				<Trash2 className="h-4 w-4" />
+			</Button>
+		</div>
+	)
+}
 
 export default function GameSetup() {
 	const playerNameRef = useRef<HTMLInputElement>(null)
@@ -20,9 +94,17 @@ export default function GameSetup() {
 		gameSettings,
 		addPlayer, 
 		removePlayer, 
+		setPlayerOrder,
 		setEliminationScore, 
 		startGame 
 	} = useGameStore()
+
+	const sensors = useSensors(
+		useSensor(PointerSensor),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		})
+	)
 
 	const handleAddPlayer = () => {
 		const playerName = playerNameRef.current?.value.trim()
@@ -59,6 +141,18 @@ export default function GameSetup() {
 		const eliminationScore = eliminationScoreRef.current?.value
 		const scoreValue = eliminationScore ? Number(eliminationScore) : gameSettings.lastEliminationScore
 		return scoreValue > 0
+	}
+
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event
+
+		if (active.id !== over?.id) {
+			const oldIndex = players.findIndex((player) => player.id === active.id)
+			const newIndex = players.findIndex((player) => player.id === over?.id)
+
+			const newPlayers = arrayMove(players, oldIndex, newIndex)
+			setPlayerOrder(newPlayers)
+		}
 	}
 
 	return (
@@ -121,7 +215,7 @@ export default function GameSetup() {
 							Players ({players.length})
 						</CardTitle>
 						<CardDescription>
-							Add 2 or more players to start the game
+							Add 2 or more players to start the game. Drag to reorder - first player deals first.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -143,29 +237,24 @@ export default function GameSetup() {
 
 						{/* Player List */}
 						{players.length > 0 && (
-							<div className="space-y-2">
-								{players.map((player, index) => (
-									<div 
-										key={player.id}
-										className="flex items-center justify-between p-3 bg-muted rounded-lg"
-									>
-										<div className="flex items-center gap-3">
-											<div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
-												{index + 1}
-											</div>
-											<span className="font-medium text-foreground">{player.name}</span>
-										</div>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={() => removePlayer(player.id)}
-											className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-										>
-											<Trash2 className="h-4 w-4" />
-										</Button>
+							<DndContext
+								sensors={sensors}
+								collisionDetection={closestCenter}
+								onDragEnd={handleDragEnd}
+							>
+								<SortableContext items={players.map(p => p.id)} strategy={verticalListSortingStrategy}>
+									<div className="space-y-2">
+										{players.map((player, index) => (
+											<SortablePlayerItem
+												key={player.id}
+												player={player}
+												index={index}
+												onRemove={() => removePlayer(player.id)}
+											/>
+										))}
 									</div>
-								))}
-							</div>
+								</SortableContext>
+							</DndContext>
 						)}
 
 						{/* Validation Messages */}

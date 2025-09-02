@@ -19,17 +19,20 @@ export interface GameState {
 	gameSettings: GameSettings
 	gameStatus: 'setup' | 'playing' | 'finished'
 	currentRound: number
+	currentDealerIndex: number
 }
 
 interface GameActions {
 	// Setup actions
 	addPlayer: (name: string) => void
 	removePlayer: (id: string) => void
+	setPlayerOrder: (players: Player[]) => void
 	setEliminationScore: (score: number) => void
 	startGame: () => void
 
 	// Game actions
 	addRoundScores: (scores: { playerId: string; score: number }[]) => void
+	setCurrentDealerIndex: (index: number) => void
 	resetGame: () => void
 	pauseGame: () => void
 	clearScores: () => void
@@ -49,7 +52,8 @@ const initialState: GameState = {
 		lastEliminationScore: 100
 	},
 	gameStatus: 'setup',
-	currentRound: 0
+	currentRound: 0,
+	currentDealerIndex: 0
 }
 
 export const useGameStore = create<GameStore>()(
@@ -74,9 +78,28 @@ export const useGameStore = create<GameStore>()(
 			},
 
 			removePlayer: (id: string) => {
-				set((state) => ({
-					players: state.players.filter(player => player.id !== id)
-				}))
+				set((state) => {
+					const playerIndex = state.players.findIndex(player => player.id === id)
+					const newPlayers = state.players.filter(player => player.id !== id)
+
+					// Adjust dealer index if necessary
+					let newDealerIndex = state.currentDealerIndex
+					if (playerIndex <= state.currentDealerIndex && newPlayers.length > 0) {
+						newDealerIndex = Math.max(0, state.currentDealerIndex - 1)
+					}
+					if (newDealerIndex >= newPlayers.length) {
+						newDealerIndex = 0
+					}
+
+					return {
+						players: newPlayers,
+						currentDealerIndex: newDealerIndex
+					}
+				})
+			},
+
+			setPlayerOrder: (players: Player[]) => {
+				set({ players })
 			},
 
 			setEliminationScore: (score: number) => {
@@ -94,7 +117,8 @@ export const useGameStore = create<GameStore>()(
 				if (players.length >= 2) {
 					set({
 						gameStatus: 'playing',
-						currentRound: 1
+						currentRound: 1,
+						currentDealerIndex: 0
 					})
 				}
 			},
@@ -102,7 +126,12 @@ export const useGameStore = create<GameStore>()(
 			// Game actions
 			addRoundScores: (scores: { playerId: string; score: number }[]) => {
 				set((state) => {
-					const updatedPlayers = state.players.map(player => {
+					const { players, currentDealerIndex } = state
+
+					// Advance dealer index
+					const nextDealerIndex = (currentDealerIndex + 1) % players.length
+
+					const updatedPlayers = players.map(player => {
 						const playerScore = scores.find(s => s.playerId === player.id)
 						if (playerScore) {
 							const newScores = [...player.scores, playerScore.score]
@@ -120,15 +149,20 @@ export const useGameStore = create<GameStore>()(
 					})
 
 					// Check if game should end (only one player left or all eliminated)
-					const activePlayers = updatedPlayers.filter(p => !p.isEliminated)
-					const gameStatus = activePlayers.length <= 1 ? 'finished' : 'playing'
+					const currentActivePlayers = updatedPlayers.filter(p => !p.isEliminated)
+					const gameStatus = currentActivePlayers.length <= 1 ? 'finished' : 'playing'
 
 					return {
 						players: updatedPlayers,
 						currentRound: state.currentRound + 1,
+						currentDealerIndex: nextDealerIndex,
 						gameStatus
 					}
 				})
+			},
+
+			setCurrentDealerIndex: (index: number) => {
+				set({ currentDealerIndex: index })
 			},
 
 			resetGame: () => {

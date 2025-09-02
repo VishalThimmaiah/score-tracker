@@ -20,7 +20,7 @@ import PlayerCard from './PlayerCard'
 import ScoreEntrySheet from './ScoreEntrySheet'
 import ActionSheet from './ActionSheet'
 import { ThemeToggle } from './ThemeToggle'
-import { Plus, RotateCcw, Trophy, History, Users, Menu } from 'lucide-react'
+import { Plus, RotateCcw, Trophy, History, Menu, CircleDot } from 'lucide-react'
 
 interface GameDashboardProps {
 	onShowHistory: () => void
@@ -35,6 +35,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 		gameSettings, 
 		gameStatus, 
 		currentRound,
+		currentDealerIndex,
 		getSortedPlayers, 
 		getWinner,
 		resetGame 
@@ -43,6 +44,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 	const sortedPlayers = getSortedPlayers()
 	const winner = getWinner()
 	const activePlayers = players.filter(p => !p.isEliminated)
+	const currentDealer = players[currentDealerIndex]
 
 
 	return (
@@ -66,8 +68,8 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 						</div>
 						<div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
 							<span className="flex items-center gap-1">
-								<Users className="h-4 w-4" />
-								{activePlayers.length} active
+								<CircleDot className="h-4 w-4" />
+								Dealer: {currentDealer?.name || 'None'}
 							</span>
 							<span>Round: {currentRound}</span>
 							<span>Target: {gameSettings.eliminationScore}</span>
@@ -149,6 +151,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							rank={index + 1}
 							eliminationScore={gameSettings.eliminationScore}
 							isWinner={gameStatus === 'finished' && winner?.id === player.id}
+							isDealer={player.id === currentDealer?.id}
 						/>
 					))}
 				</div>
