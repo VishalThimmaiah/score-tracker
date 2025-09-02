@@ -1,91 +1,21 @@
 'use client'
 
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
-import { ArrowLeft, X, Save } from 'lucide-react'
+import { X, Save } from 'lucide-react'
 import { toast } from 'sonner'
+import { useFloatingKeypad } from '@/hooks/useFloatingKeypad'
+import { FloatingKeypad } from '@/components/FloatingKeypad'
+import { ScalablePlayerList } from '@/components/ScalablePlayerList'
 
 interface ScoreEntrySheetProps {
 	isOpen: boolean
 	onClose: () => void
 }
 
-interface PlayerScoreCardProps {
-	player: {
-		id: string
-		name: string
-		totalScore: number
-		isEliminated: boolean
-	}
-	score: string
-	onScoreChange: (playerId: string, value: string) => void
-	onKeyPress: (e: React.KeyboardEvent, playerId: string) => void
-	inputRef: (el: HTMLInputElement | null) => void
-	autoFocus?: boolean
-}
-
-function PlayerScoreCard({ 
-	player, 
-	score, 
-	onScoreChange, 
-	onKeyPress, 
-	inputRef, 
-	autoFocus = false 
-}: PlayerScoreCardProps) {
-	const hasScore = score && score.trim() !== ''
-	
-	return (
-		<Card className={`transition-all duration-200 ${
-			hasScore 
-				? 'border-green-300 bg-green-50' 
-				: 'border-gray-200 hover:border-gray-300'
-		}`}>
-			<CardContent className="p-4">
-				<div className="text-center space-y-3">
-					{/* Player Name */}
-					<div>
-						<h3 className="font-semibold text-lg text-gray-900">
-							{player.name}
-						</h3>
-						<p className="text-sm text-gray-500">
-							Total: {player.totalScore}
-						</p>
-					</div>
-					
-					{/* Score Input */}
-					<div className="relative">
-						<Input
-							ref={inputRef}
-							type="number"
-							min="0"
-							max="100"
-							placeholder="Enter score"
-							value={score}
-							onChange={(e) => onScoreChange(player.id, e.target.value)}
-							onKeyPress={(e) => onKeyPress(e, player.id)}
-							className={`text-2xl text-center h-14 ${
-								hasScore 
-									? 'border-green-400 focus:border-green-500' 
-									: 'focus:border-blue-500'
-							}`}
-							autoFocus={autoFocus}
-						/>
-						{hasScore && (
-							<div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"></div>
-						)}
-					</div>
-				</div>
-			</CardContent>
-		</Card>
-	)
-}
-
 export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProps) {
 	const { players, currentRound, addRoundScores } = useGameStore()
-	const scoreRefs = useRef<{ [playerId: string]: HTMLInputElement | null }>({})
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [scores, setScores] = useState<{ [playerId: string]: string }>({})
 
@@ -100,22 +30,56 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 	
 	const allScoresEntered = completedCount === activePlayers.length && activePlayers.length > 0
 
+	// Floating keypad functionality
+	const handleScoreEntered = useCallback((playerId: string, score: number) => {
+		setScores(prev => ({
+			...prev,
+			[playerId]: score.toString()
+		}))
+	}, [])
+
+	const {
+		isVisible: keypadVisible,
+		position: keypadPosition,
+		activePlayerId,
+		currentValue: keypadValue,
+		containerRef,
+		showKeypad,
+		hideKeypad,
+		handleNumberPress,
+		handleBackspace,
+		handleClear,
+		handleConfirm,
+		handleCancel,
+		handleMultiply
+	} = useFloatingKeypad({
+		onScoreEntered: handleScoreEntered
+	})
+
+	const handlePlayerScoreClick = useCallback((playerId: string, targetElement: HTMLElement) => {
+		const currentScore = scores[playerId] || ''
+		showKeypad(playerId, targetElement, currentScore)
+	}, [showKeypad, scores])
+
 	const handleClose = useCallback(() => {
+		hideKeypad()
 		setScores({})
 		onClose()
-	}, [onClose])
+	}, [hideKeypad, onClose])
 
 	// Reset scores when sheet opens/closes
 	useEffect(() => {
 		if (isOpen) {
 			setScores({})
+		} else {
+			hideKeypad()
 		}
-	}, [isOpen])
+	}, [isOpen, hideKeypad])
 
 	// Handle escape key to close
 	useEffect(() => {
 		const handleEscape = (e: KeyboardEvent) => {
-			if (e.key === 'Escape' && isOpen) {
+			if (e.key === 'Escape' && isOpen && !keypadVisible) {
 				handleClose()
 			}
 		}
@@ -124,47 +88,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 			document.addEventListener('keydown', handleEscape)
 			return () => document.removeEventListener('keydown', handleEscape)
 		}
-	}, [isOpen, handleClose])
-
-	const handleScoreChange = (playerId: string, value: string) => {
-		// Allow only numbers and empty string
-		if (value !== '' && !/^\d+$/.test(value)) {
-			return
-		}
-		
-		setScores(prev => ({
-			...prev,
-			[playerId]: value
-		}))
-	}
-
-	const handleKeyPress = (e: React.KeyboardEvent, playerId: string) => {
-		if (e.key === 'Enter' || e.key === 'Tab') {
-			e.preventDefault()
-			
-			// Find next input or submit if this is the last one
-			const activePlayerIds = activePlayers.map(p => p.id)
-			const currentIndex = activePlayerIds.indexOf(playerId)
-			
-			if (e.shiftKey && e.key === 'Tab') {
-				// Move to previous input
-				if (currentIndex > 0) {
-					const prevPlayerId = activePlayerIds[currentIndex - 1]
-					const prevInput = scoreRefs.current[prevPlayerId]
-					prevInput?.focus()
-				}
-			} else {
-				// Move to next input or submit
-				if (currentIndex < activePlayerIds.length - 1) {
-					const nextPlayerId = activePlayerIds[currentIndex + 1]
-					const nextInput = scoreRefs.current[nextPlayerId]
-					nextInput?.focus()
-				} else if (allScoresEntered) {
-					handleSubmit()
-				}
-			}
-		}
-	}
+	}, [isOpen, keypadVisible, handleClose])
 
 	const handleSubmit = async () => {
 		setIsSubmitting(true)
@@ -208,23 +132,16 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 
 	if (!isOpen) return null
 
+	// Get active player name for keypad
+	const activePlayer = activePlayers.find(p => p.id === activePlayerId)
+
 	return (
-		<div className="fixed inset-0 z-50 bg-white flex flex-col">
+		<div ref={containerRef} className="fixed inset-0 z-50 bg-white flex flex-col">
 			{/* Header */}
 			<div className="border-b border-gray-200 bg-white flex-shrink-0">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex items-center justify-between h-16">
-						<div className="flex items-center gap-4">
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={handleClose}
-								className="flex items-center gap-2"
-							>
-								<ArrowLeft className="h-4 w-4" />
-								Back to Game
-							</Button>
-						</div>
+						<div className="w-10"></div> {/* Spacer for centering */}
 						
 						<div className="text-center">
 							<h1 className="text-xl font-semibold text-gray-900">
@@ -236,6 +153,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 							variant="ghost"
 							size="sm"
 							onClick={handleClose}
+							disabled={keypadVisible}
 						>
 							<X className="h-4 w-4" />
 						</Button>
@@ -243,7 +161,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 					
 					<div className="pb-4">
 						<p className="text-center text-sm text-gray-600">
-							Enter scores for all active players. Lower scores are better.
+							{`💡 Tap any player's score button to enter their score quickly`}
 						</p>
 					</div>
 				</div>
@@ -251,53 +169,31 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 
 			{/* Main Content - Scrollable */}
 			<div className="flex-1 overflow-y-auto min-h-0">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-					{/* Player Grid */}
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-4">
-						{activePlayers.map((player, index) => (
-							<PlayerScoreCard
-								key={player.id}
-								player={player}
-								score={scores[player.id] || ''}
-								onScoreChange={handleScoreChange}
-								onKeyPress={handleKeyPress}
-								inputRef={(el) => { scoreRefs.current[player.id] = el }}
-								autoFocus={index === 0}
-							/>
-						))}
-					</div>
+				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+					<ScalablePlayerList
+						players={activePlayers}
+						scores={scores}
+						onScoreClick={handlePlayerScoreClick}
+					/>
 				</div>
 			</div>
 
 			{/* Footer */}
 			<div className="border-t border-gray-200 bg-white flex-shrink-0">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-					{/* Progress */}
-					<div className="text-center mb-4">
-						<p className="text-sm text-gray-600">
-							Progress: {completedCount} of {activePlayers.length} players completed
-						</p>
-						<div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-							<div 
-								className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-								style={{ width: `${activePlayers.length > 0 ? (completedCount / activePlayers.length) * 100 : 0}%` }}
-							/>
-						</div>
-					</div>
-					
+				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 					{/* Buttons */}
 					<div className="flex gap-4 justify-center">
 						<Button 
 							variant="outline" 
 							onClick={handleClose}
-							disabled={isSubmitting}
+							disabled={isSubmitting || keypadVisible}
 							className="min-w-[120px]"
 						>
 							Cancel
 						</Button>
 						<Button 
 							onClick={handleSubmit}
-							disabled={!allScoresEntered || isSubmitting}
+							disabled={!allScoresEntered || isSubmitting || keypadVisible}
 							className="min-w-[120px]"
 						>
 							<Save className="h-4 w-4 mr-2" />
@@ -308,11 +204,28 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 					{/* Tips */}
 					<div className="text-center mt-4">
 						<p className="text-xs text-gray-500">
-							💡 Tip: Press Tab or Enter to move between players
+							{activePlayers.length > 8 
+								? `🚀 Large group (${activePlayers.length} players) - Floating keypad optimized for quick entry`
+								: '💡 Tap score buttons for quick entry • Keyboard shortcuts available'
+							}
 						</p>
 					</div>
 				</div>
 			</div>
+
+			{/* Floating Keypad */}
+			<FloatingKeypad
+				isVisible={keypadVisible}
+				position={keypadPosition}
+				currentValue={keypadValue}
+				playerName={activePlayer?.name}
+				onNumberPress={handleNumberPress}
+				onBackspace={handleBackspace}
+				onClear={handleClear}
+				onConfirm={handleConfirm}
+				onCancel={handleCancel}
+				onMultiply={handleMultiply}
+			/>
 		</div>
 	)
 }
