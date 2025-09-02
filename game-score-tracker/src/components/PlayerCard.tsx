@@ -79,7 +79,7 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, i
 	}
 
 	return (
-		<Card className={`${getBackgroundColor()} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''}`}>
+		<Card className={`py-0 ${getBackgroundColor()} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''}`}>
 			<CardContent className="p-4">
 				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center gap-3">
