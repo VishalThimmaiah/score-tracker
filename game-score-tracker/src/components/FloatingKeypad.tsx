@@ -1,5 +1,6 @@
 'use client'
 
+import { memo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Delete, X, Check } from 'lucide-react'
@@ -14,9 +15,10 @@ interface FloatingKeypadProps {
 	onClear: () => void
 	onConfirm: () => void
 	onCancel: () => void
+	onMultiply: () => void
 }
 
-export function FloatingKeypad({
+export const FloatingKeypad = memo(function FloatingKeypad({
 	isVisible,
 	position,
 	currentValue,
@@ -25,16 +27,21 @@ export function FloatingKeypad({
 	onBackspace,
 	onClear,
 	onConfirm,
-	onCancel
+	onCancel,
+	onMultiply
 }: FloatingKeypadProps) {
 	if (!isVisible) return null
 
-	const numberButtons = [
+	const keypadButtons = [
 		['7', '8', '9'],
 		['4', '5', '6'],
-		['1', '2', '3'],
-		['0']
+		['1', '2', '3']
 	]
+
+	// Optimize number press handler to prevent recreation on every render
+	const handleNumberPress = useCallback((digit: string) => {
+		onNumberPress(digit)
+	}, [onNumberPress])
 
 	return (
 		<div
@@ -44,8 +51,8 @@ export function FloatingKeypad({
 				top: position.y
 			}}
 		>
-			<Card className="w-48 shadow-lg border-2 border-blue-200 bg-white">
-				<CardContent className="p-3">
+			<Card className="w-56 shadow-lg border-2 border-blue-200 bg-white">
+				<CardContent className="p-4">
 					{/* Header */}
 					<div className="flex items-center justify-between mb-3">
 						<div className="text-sm font-medium text-gray-700 truncate">
@@ -62,47 +69,65 @@ export function FloatingKeypad({
 					</div>
 
 					{/* Display */}
-					<div className="mb-3 p-2 bg-gray-50 rounded border text-center">
-						<div className="text-lg font-mono font-semibold text-gray-900 min-h-[28px]">
+					<div className="mb-4 p-3 bg-gray-50 rounded border text-center">
+						<div className="text-xl font-mono font-semibold text-gray-900 min-h-[32px]">
 							{currentValue || '--'}
 						</div>
 					</div>
 
-					{/* Number Grid */}
-					<div className="grid gap-1 mb-3">
-						{numberButtons.map((row, rowIndex) => (
-							<div key={rowIndex} className="flex gap-1 justify-center">
-								{row.map((digit) => (
-									<Button
-										key={digit}
-										variant="outline"
-										size="sm"
-										onClick={() => onNumberPress(digit)}
-										className="h-8 w-8 p-0 text-sm font-medium hover:bg-blue-50 hover:border-blue-300"
-									>
-										{digit}
-									</Button>
-								))}
-							</div>
-						))}
-					</div>
-
-					{/* Action Buttons */}
-					<div className="flex gap-1">
+					{/* Number Grid - 4x3 Grid Layout */}
+					<div className="grid grid-cols-3 gap-2 mb-4">
+						{/* First 3 rows of numbers */}
+						{keypadButtons.map((row, rowIndex) => 
+							row.map((digit) => (
+								<Button
+									key={digit}
+									variant="outline"
+									size="sm"
+									onClick={() => handleNumberPress(digit)}
+									className="h-11 w-11 p-0 text-base font-semibold hover:bg-blue-50 hover:border-blue-300 active:bg-blue-100 transition-colors duration-75"
+								>
+									{digit}
+								</Button>
+							))
+						)}
+						
+						{/* Bottom row: Backspace, 0, x2 */}
 						<Button
 							variant="outline"
 							size="sm"
 							onClick={onBackspace}
-							className="flex-1 h-8 hover:bg-gray-50"
+							className="h-11 w-11 p-0 hover:bg-red-50 hover:border-red-300 active:bg-red-100 transition-colors duration-75"
 							disabled={!currentValue}
 						>
-							<Delete className="h-3 w-3" />
+							<Delete className="h-4 w-4" />
 						</Button>
 						<Button
 							variant="outline"
 							size="sm"
+							onClick={() => handleNumberPress('0')}
+							className="h-11 w-11 p-0 text-base font-semibold hover:bg-blue-50 hover:border-blue-300 active:bg-blue-100 transition-colors duration-75"
+						>
+							0
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={onMultiply}
+							className="h-11 w-11 p-0 text-sm font-semibold hover:bg-green-50 hover:border-green-300 active:bg-green-100 transition-colors duration-75"
+							disabled={!currentValue || currentValue === '0'}
+						>
+							×2
+						</Button>
+					</div>
+
+					{/* Action Buttons */}
+					<div className="flex gap-2">
+						<Button
+							variant="outline"
+							size="sm"
 							onClick={onClear}
-							className="flex-1 h-8 text-xs hover:bg-gray-50"
+							className="flex-1 h-9 text-xs hover:bg-gray-50 active:bg-gray-100 transition-colors duration-75"
 							disabled={!currentValue}
 						>
 							Clear
@@ -110,7 +135,7 @@ export function FloatingKeypad({
 						<Button
 							size="sm"
 							onClick={onConfirm}
-							className="flex-1 h-8 bg-blue-600 hover:bg-blue-700"
+							className="flex-1 h-9 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors duration-75"
 							disabled={currentValue === ''}
 						>
 							<Check className="h-3 w-3" />
@@ -121,4 +146,4 @@ export function FloatingKeypad({
 			</Card>
 		</div>
 	)
-}
+})

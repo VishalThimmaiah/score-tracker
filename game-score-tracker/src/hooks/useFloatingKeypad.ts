@@ -23,8 +23,8 @@ export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypa
 
 		if (!containerRect) return { x: 0, y: 0 }
 
-		const keypadWidth = 200
-		const keypadHeight = 240
+		const keypadWidth = 224 // Updated for larger keypad (w-56)
+		const keypadHeight = 280 // Updated for taller keypad with larger buttons
 		const padding = 16
 		const viewportHeight = window.innerHeight
 
@@ -101,6 +101,15 @@ export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypa
 		}
 	}, [currentValue, activePlayerId, onScoreEntered, hideKeypad])
 
+	const handleMultiply = useCallback(() => {
+		if (currentValue !== '' && currentValue !== '0') {
+			const currentNumber = parseInt(currentValue, 10)
+			if (!isNaN(currentNumber)) {
+				setCurrentValue((currentNumber * 2).toString())
+			}
+		}
+	}, [currentValue])
+
 	const handleCancel = useCallback(() => {
 		hideKeypad()
 		onCancel?.()
@@ -142,6 +151,7 @@ export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypa
 		handleBackspace,
 		handleClear,
 		handleConfirm,
-		handleCancel
+		handleCancel,
+		handleMultiply
 	}
 }

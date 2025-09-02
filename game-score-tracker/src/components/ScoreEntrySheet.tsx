@@ -50,7 +50,8 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 		handleBackspace,
 		handleClear,
 		handleConfirm,
-		handleCancel
+		handleCancel,
+		handleMultiply
 	} = useFloatingKeypad({
 		onScoreEntered: handleScoreEntered
 	})
@@ -223,6 +224,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 				onClear={handleClear}
 				onConfirm={handleConfirm}
 				onCancel={handleCancel}
+				onMultiply={handleMultiply}
 			/>
 		</div>
 	)
