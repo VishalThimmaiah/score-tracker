@@ -18,27 +18,27 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 	// Determine background color based on score percentage
 	const getBackgroundColor = () => {
 		if (player.isEliminated) {
-			return 'bg-gray-800 text-white border-gray-700'
+			return 'bg-gray-800 dark:bg-gray-700 text-white border-gray-700 dark:border-gray-600'
 		}
 		
 		if (scorePercentage < 25) {
-			return 'bg-green-100 text-green-900 border-green-300'
+			return 'bg-green-100 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-300 dark:border-green-700'
 		} else if (scorePercentage < 50) {
-			return 'bg-yellow-100 text-yellow-900 border-yellow-300'
+			return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100 border-yellow-300 dark:border-yellow-700'
 		} else if (scorePercentage < 75) {
-			return 'bg-orange-100 text-orange-900 border-orange-300'
+			return 'bg-orange-100 dark:bg-orange-900/30 text-orange-900 dark:text-orange-100 border-orange-300 dark:border-orange-700'
 		} else {
-			return 'bg-red-100 text-red-900 border-red-300'
+			return 'bg-red-100 dark:bg-red-900/30 text-red-900 dark:text-red-100 border-red-300 dark:border-red-700'
 		}
 	}
 
 	// Get progress bar color
 	const getProgressColor = () => {
-		if (player.isEliminated) return 'bg-gray-600'
-		if (scorePercentage < 25) return 'bg-green-500'
-		if (scorePercentage < 50) return 'bg-yellow-500'
-		if (scorePercentage < 75) return 'bg-orange-500'
-		return 'bg-red-500'
+		if (player.isEliminated) return 'bg-gray-600 dark:bg-gray-500'
+		if (scorePercentage < 25) return 'bg-green-500 dark:bg-green-400'
+		if (scorePercentage < 50) return 'bg-yellow-500 dark:bg-yellow-400'
+		if (scorePercentage < 75) return 'bg-orange-500 dark:bg-orange-400'
+		return 'bg-red-500 dark:bg-red-400'
 	}
 
 	return (

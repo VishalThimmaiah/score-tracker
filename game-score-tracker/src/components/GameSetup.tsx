@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Trash2, Users, Target } from 'lucide-react'
 import QRCodeWithLogo from './QRCodeWithLogo'
+import { ThemeToggle } from './ThemeToggle'
 
 export default function GameSetup() {
 	const playerNameRef = useRef<HTMLInputElement>(null)
@@ -61,15 +62,20 @@ export default function GameSetup() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+		<div className="min-h-screen bg-blue-50 dark:bg-black p-4">
 			<div className="max-w-md mx-auto space-y-6">
 				{/* Header */}
-				<div className="text-center py-6">
+				<div className="text-center py-6 relative">
+					{/* Theme Toggle - positioned in top right */}
+					<div className="absolute top-0 right-0">
+						<ThemeToggle />
+					</div>
+					
 					<div className="flex items-center justify-center gap-3 mb-2">
 						<Image src="/logo.png" alt="Game Score Tracker" width={40} height={40} className="w-10 h-10" />
-						<h1 className="text-3xl font-bold text-gray-900">Game Score Tracker</h1>
+						<h1 className="text-3xl font-bold text-gray-900 dark:text-white">Game Score Tracker</h1>
 					</div>
-					<p className="text-gray-600">Set up your card game session</p>
+					<p className="text-gray-600 dark:text-gray-300">Set up your card game session</p>
 					<div className="mt-4">
 						<QRCodeWithLogo />
 					</div>
@@ -140,19 +146,19 @@ export default function GameSetup() {
 								{players.map((player, index) => (
 									<div 
 										key={player.id}
-										className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+										className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
 									>
 										<div className="flex items-center gap-3">
-											<div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+											<div className="w-8 h-8 bg-blue-500 dark:bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
 												{index + 1}
 											</div>
-											<span className="font-medium">{player.name}</span>
+											<span className="font-medium dark:text-white">{player.name}</span>
 										</div>
 										<Button
 											variant="ghost"
 											size="icon"
 											onClick={() => removePlayer(player.id)}
-											className="text-red-500 hover:text-red-700 hover:bg-red-50"
+											className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
 										>
 											<Trash2 className="h-4 w-4" />
 										</Button>
@@ -163,7 +169,7 @@ export default function GameSetup() {
 
 						{/* Validation Messages */}
 						{players.length < 2 && (
-							<p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+							<p className="text-sm text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/20 p-2 rounded">
 								Add at least 2 players to start the game
 							</p>
 						)}
@@ -172,7 +178,7 @@ export default function GameSetup() {
 
 				{/* Elimination Score Validation */}
 				{!isValidEliminationScore() && (
-					<div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+					<div className="text-sm text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20 p-2 rounded">
 						Elimination score must be greater than 0 to start the game
 					</div>
 				)}
@@ -188,7 +194,7 @@ export default function GameSetup() {
 				</Button>
 
 				{/* Game Info */}
-				<div className="text-center text-sm text-gray-500 space-y-1">
+				<div className="text-center text-sm text-gray-500 dark:text-gray-400 space-y-1">
 					<p>Perfect for: 5 Cards, Secret 7, and custom variants</p>
 					<p>Lowest score wins • Manual scoring</p>
 				</div>

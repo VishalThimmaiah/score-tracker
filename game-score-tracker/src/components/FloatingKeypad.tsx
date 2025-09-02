@@ -51,26 +51,26 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 				top: position.y
 			}}
 		>
-			<Card className="w-56 shadow-lg border-2 border-blue-200 bg-white">
+			<Card className="w-56 shadow-lg border-2 border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800">
 				<CardContent className="p-4">
 					{/* Header */}
 					<div className="flex items-center justify-between mb-3">
-						<div className="text-sm font-medium text-gray-700 truncate">
+						<div className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
 							{playerName ? `${playerName}` : 'Enter Score'}
 						</div>
 						<Button
 							variant="ghost"
 							size="sm"
 							onClick={onCancel}
-							className="h-6 w-6 p-0 hover:bg-gray-100"
+							className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
 						>
 							<X className="h-3 w-3" />
 						</Button>
 					</div>
 
 					{/* Display */}
-					<div className="mb-4 p-3 bg-gray-50 rounded border text-center">
-						<div className="text-xl font-mono font-semibold text-gray-900 min-h-[32px]">
+					<div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded border dark:border-gray-600 text-center">
+						<div className="text-xl font-mono font-semibold text-gray-900 dark:text-white min-h-[32px]">
 							{currentValue || '--'}
 						</div>
 					</div>
@@ -85,7 +85,7 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 									variant="outline"
 									size="sm"
 									onClick={() => handleNumberPress(digit)}
-									className="h-11 w-11 p-0 text-base font-semibold hover:bg-blue-50 hover:border-blue-300 active:bg-blue-100 transition-colors duration-75"
+									className="h-11 w-11 p-0 text-base font-semibold hover:bg-blue-50 hover:border-blue-300 active:bg-blue-100 dark:hover:bg-blue-900/20 dark:hover:border-blue-600 dark:active:bg-blue-900/40 transition-colors duration-75"
 								>
 									{digit}
 								</Button>
@@ -97,7 +97,7 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 							variant="outline"
 							size="sm"
 							onClick={onBackspace}
-							className="h-11 w-11 p-0 hover:bg-red-50 hover:border-red-300 active:bg-red-100 transition-colors duration-75"
+							className="h-11 w-11 p-0 hover:bg-red-50 hover:border-red-300 active:bg-red-100 dark:hover:bg-red-900/20 dark:hover:border-red-600 dark:active:bg-red-900/40 transition-colors duration-75"
 							disabled={!currentValue}
 						>
 							<Delete className="h-4 w-4" />
@@ -106,7 +106,7 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 							variant="outline"
 							size="sm"
 							onClick={() => handleNumberPress('0')}
-							className="h-11 w-11 p-0 text-base font-semibold hover:bg-blue-50 hover:border-blue-300 active:bg-blue-100 transition-colors duration-75"
+							className="h-11 w-11 p-0 text-base font-semibold hover:bg-blue-50 hover:border-blue-300 active:bg-blue-100 dark:hover:bg-blue-900/20 dark:hover:border-blue-600 dark:active:bg-blue-900/40 transition-colors duration-75"
 						>
 							0
 						</Button>
@@ -114,7 +114,7 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 							variant="outline"
 							size="sm"
 							onClick={onMultiply}
-							className="h-11 w-11 p-0 text-sm font-semibold hover:bg-green-50 hover:border-green-300 active:bg-green-100 transition-colors duration-75"
+							className="h-11 w-11 p-0 text-sm font-semibold hover:bg-green-50 hover:border-green-300 active:bg-green-100 dark:hover:bg-green-900/20 dark:hover:border-green-600 dark:active:bg-green-900/40 transition-colors duration-75"
 							disabled={!currentValue || currentValue === '0'}
 						>
 							×2
@@ -127,7 +127,7 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 							variant="outline"
 							size="sm"
 							onClick={onClear}
-							className="flex-1 h-9 text-xs hover:bg-gray-50 active:bg-gray-100 transition-colors duration-75"
+							className="flex-1 h-9 text-xs hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-700 dark:active:bg-gray-600 transition-colors duration-75"
 							disabled={!currentValue}
 						>
 							Clear
@@ -135,7 +135,7 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 						<Button
 							size="sm"
 							onClick={onConfirm}
-							className="flex-1 h-9 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors duration-75"
+							className="flex-1 h-9 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 dark:bg-blue-700 dark:hover:bg-blue-600 dark:active:bg-blue-500 transition-colors duration-75"
 							disabled={currentValue === ''}
 						>
 							<Check className="h-3 w-3" />

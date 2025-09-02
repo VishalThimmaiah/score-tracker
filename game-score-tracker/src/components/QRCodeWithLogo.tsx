@@ -129,7 +129,7 @@ const QRCodeWithLogo: React.FC<QRCodeWithLogoProps> = ({
           <DialogTitle>Share Game Score Tracker</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center space-y-6">
-          <div className={`relative bg-white p-8 rounded-xl shadow-sm border ${className}`}>
+          <div className={`relative bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border dark:border-gray-700 ${className}`}>
             <div ref={qrRef} className="relative">
               <QRCode
                 value={url}
@@ -140,7 +140,7 @@ const QRCodeWithLogo: React.FC<QRCodeWithLogoProps> = ({
               />
               {/* Logo overlay */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white rounded-full p-2 shadow-sm border border-gray-200">
+                <div className="bg-white dark:bg-gray-800 rounded-full p-2 shadow-sm border border-gray-200 dark:border-gray-600">
                   <Image
                     src="/logo.png"
                     alt="Logo"
@@ -153,7 +153,7 @@ const QRCodeWithLogo: React.FC<QRCodeWithLogoProps> = ({
             </div>
           </div>
           
-          <p className="text-sm text-gray-600 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
             Scan this QR code to open the Game Score Tracker app in your browser
           </p>
           
@@ -168,7 +168,7 @@ const QRCodeWithLogo: React.FC<QRCodeWithLogoProps> = ({
             </Button>
           </div>
           
-          <div className="text-xs text-gray-500 text-center break-all">
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center break-all">
             {url}
           </div>
         </div>

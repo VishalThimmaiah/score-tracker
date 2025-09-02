@@ -136,15 +136,15 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 	const activePlayer = activePlayers.find(p => p.id === activePlayerId)
 
 	return (
-		<div ref={containerRef} className="fixed inset-0 z-50 bg-white flex flex-col">
+		<div ref={containerRef} className="fixed inset-0 z-50 bg-white dark:bg-gray-900 flex flex-col">
 			{/* Header */}
-			<div className="border-b border-gray-200 bg-white flex-shrink-0">
+			<div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex-shrink-0">
 				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex items-center justify-between h-16">
 						<div className="w-10"></div> {/* Spacer for centering */}
 						
 						<div className="text-center">
-							<h1 className="text-xl font-semibold text-gray-900">
+							<h1 className="text-xl font-semibold text-gray-900 dark:text-white">
 								Round {currentRound} Score Entry
 							</h1>
 						</div>
@@ -160,7 +160,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 					</div>
 					
 					<div className="pb-4">
-						<p className="text-center text-sm text-gray-600">
+						<p className="text-center text-sm text-gray-600 dark:text-gray-400">
 							{`💡 Tap any player's score button to enter their score quickly`}
 						</p>
 					</div>
@@ -179,7 +179,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 			</div>
 
 			{/* Footer */}
-			<div className="border-t border-gray-200 bg-white flex-shrink-0">
+			<div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex-shrink-0">
 				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 					{/* Buttons */}
 					<div className="flex gap-4 justify-center">
@@ -203,7 +203,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 					
 					{/* Tips */}
 					<div className="text-center mt-4">
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-gray-500 dark:text-gray-400">
 							{activePlayers.length > 8 
 								? `🚀 Large group (${activePlayers.length} players) - Floating keypad optimized for quick entry`
 								: '💡 Tap score buttons for quick entry • Keyboard shortcuts available'
