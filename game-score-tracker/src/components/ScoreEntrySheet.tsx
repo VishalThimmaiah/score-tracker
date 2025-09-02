@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, X, Save } from 'lucide-react'
+import { X, Save } from 'lucide-react'
 import { toast } from 'sonner'
 import { useFloatingKeypad } from '@/hooks/useFloatingKeypad'
 import { FloatingKeypad } from '@/components/FloatingKeypad'
@@ -160,7 +160,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 					
 					<div className="pb-4">
 						<p className="text-center text-sm text-gray-600">
-							💡 Tap any player's score button to enter their score quickly
+							{`💡 Tap any player's score button to enter their score quickly`}
 						</p>
 					</div>
 				</div>

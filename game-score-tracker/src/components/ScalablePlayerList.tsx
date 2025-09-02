@@ -148,8 +148,8 @@ export function ScalablePlayerList({
 							<span className="text-xs text-white font-bold">!</span>
 						</div>
 						<span>
-							Large group detected ({activePlayers.length} players). 
-							Tap any player's score button to enter their score quickly.
+							{`Large group detected ({activePlayers.length} players). 
+							Tap any player's score button to enter their score quickly.`}
 						</span>
 					</div>
 				</div>
