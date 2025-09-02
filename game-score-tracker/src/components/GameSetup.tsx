@@ -65,20 +65,21 @@ export default function GameSetup() {
 		<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
 			<div className="max-w-md mx-auto space-y-6">
 				{/* Header */}
-				<div className="text-center py-6 relative">
-					{/* Theme Toggle - positioned in top right */}
-					<div className="absolute top-0 right-0">
+				<div className="flex items-center justify-between py-4">
+					<div className="flex-1 text-center">
+						<div className="flex items-center justify-center gap-3 mb-1">
+							<Image src="/logo.png" alt="Game Score Tracker" width={32} height={32} className="w-8 h-8" />
+							<h1 className="text-2xl font-bold text-foreground">Game Score Tracker</h1>
+						</div>
+						<p className="text-sm text-muted-foreground">Set up your card game session</p>
+					</div>
+					<div className="w-10">
 						<ThemeToggle />
 					</div>
-					
-					<div className="flex items-center justify-center gap-3 mb-2">
-						<Image src="/logo.png" alt="Game Score Tracker" width={40} height={40} className="w-10 h-10" />
-						<h1 className="text-3xl font-bold text-foreground">Game Score Tracker</h1>
-					</div>
-					<p className="text-muted-foreground">Set up your card game session</p>
-					<div className="mt-4">
-						<QRCodeWithLogo />
-					</div>
+				</div>
+
+				<div className="text-center">
+					<QRCodeWithLogo />
 				</div>
 
 				{/* Game Settings */}

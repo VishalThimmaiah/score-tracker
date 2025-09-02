@@ -37,22 +37,20 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 		<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
 			<div className="max-w-4xl mx-auto space-y-4">
 				{/* Header */}
-				<div className="flex items-center gap-4 py-4 relative">
+				<div className="flex items-center justify-between py-4">
 					<Button 
 						variant="outline" 
 						size="icon"
 						onClick={onBack}
-						className="shrink-0"
+						className="h-8 w-8"
 					>
 						<ArrowLeft className="h-4 w-4" />
 					</Button>
-					<div className="flex-1">
+					<div className="flex-1 text-center">
 						<h1 className="text-2xl font-bold text-foreground">Game History</h1>
-						<p className="text-muted-foreground">Round-by-round score breakdown</p>
+						<p className="text-sm text-muted-foreground">Round-by-round score breakdown</p>
 					</div>
-					
-					{/* Theme Toggle - positioned in top right */}
-					<div className="shrink-0">
+					<div className="w-8">
 						<ThemeToggle />
 					</div>
 				</div>

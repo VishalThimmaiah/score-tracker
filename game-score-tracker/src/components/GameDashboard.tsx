@@ -49,32 +49,31 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 		<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
 			<div className="max-w-md mx-auto space-y-4">
 				{/* Header */}
-				<div className="relative text-center py-4">
+				<div className="flex items-center justify-between py-4">
 					<Button
 						variant="ghost"
 						size="icon"
 						onClick={() => setShowActionSheet(true)}
-						className="absolute left-0 top-4 h-8 w-8"
+						className="h-8 w-8"
 					>
 						<Menu className="h-5 w-5" />
 					</Button>
-					
-					{/* Theme Toggle - positioned in top right */}
-					<div className="absolute right-0 top-4">
+					<div className="flex-1 text-center">
+						<div className="flex items-center justify-center gap-2 mb-1">
+							<Image src="/logo.png" alt="Game Score Tracker" width={32} height={32} className="w-8 h-8" />
+							<h1 className="text-2xl font-bold text-foreground">Game Score Tracker</h1>
+						</div>
+						<div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+							<span className="flex items-center gap-1">
+								<Users className="h-4 w-4" />
+								{activePlayers.length} active
+							</span>
+							<span>Round: {currentRound}</span>
+							<span>Target: {gameSettings.eliminationScore}</span>
+						</div>
+					</div>
+					<div className="w-8">
 						<ThemeToggle />
-					</div>
-					
-					<div className="flex items-center justify-center gap-2 mb-1">
-						<Image src="/logo.png" alt="Game Score Tracker" width={32} height={32} className="w-8 h-8" />
-						<h1 className="text-2xl font-bold text-foreground">Game Score Tracker</h1>
-					</div>
-					<div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-						<span className="flex items-center gap-1">
-							<Users className="h-4 w-4" />
-							{activePlayers.length} active
-						</span>
-						<span>Current Round: {currentRound}</span>
-						<span>Target: {gameSettings.eliminationScore}</span>
 					</div>
 				</div>
 
