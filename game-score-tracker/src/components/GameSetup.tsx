@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
@@ -88,10 +88,12 @@ function SortablePlayerItem({ player, index, onRemove }: SortablePlayerItemProps
 export default function GameSetup() {
 	const playerNameRef = useRef<HTMLInputElement>(null)
 	const eliminationScoreRef = useRef<HTMLInputElement>(null)
+	const [selectedPickerId, setSelectedPickerId] = useState<string>('')
 	
 	const { 
 		players, 
 		gameSettings,
+		currentPickerIndex,
 		addPlayer, 
 		removePlayer, 
 		setPlayerOrder,
@@ -99,6 +101,20 @@ export default function GameSetup() {
 		setEliminationScore, 
 		startGame 
 	} = useGameStore()
+
+	// Initialize selected picker when players change
+	useEffect(() => {
+		if (players.length > 0) {
+			const currentPicker = players[currentPickerIndex]
+			if (currentPicker) {
+				setSelectedPickerId(currentPicker.id)
+			} else if (players.length > 0) {
+				// Fallback to first player if currentPickerIndex is invalid
+				setSelectedPickerId(players[0].id)
+				setCurrentPickerIndex(0)
+			}
+		}
+	}, [players, currentPickerIndex, setCurrentPickerIndex])
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -135,6 +151,7 @@ export default function GameSetup() {
 	const handlePickerChange = (playerId: string) => {
 		const playerIndex = players.findIndex(p => p.id === playerId)
 		if (playerIndex !== -1) {
+			setSelectedPickerId(playerId)
 			setCurrentPickerIndex(playerIndex)
 		}
 	}
@@ -297,7 +314,7 @@ export default function GameSetup() {
 											type="radio"
 											name="picker"
 											value={player.id}
-											defaultChecked={index === 0}
+											checked={selectedPickerId === player.id}
 											onChange={() => handlePickerChange(player.id)}
 											className="w-4 h-4 text-primary"
 										/>

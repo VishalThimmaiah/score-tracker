@@ -20,7 +20,7 @@ import PlayerCard from './PlayerCard'
 import ScoreEntrySheet from './ScoreEntrySheet'
 import ActionSheet from './ActionSheet'
 import { ThemeToggle } from './ThemeToggle'
-import { Plus, RotateCcw, Trophy, History, Menu, CircleDot } from 'lucide-react'
+import { Plus, RotateCcw, Trophy, History, Menu, CircleDot, Play } from 'lucide-react'
 
 interface GameDashboardProps {
 	onShowHistory: () => void
@@ -71,12 +71,12 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 						<div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
 							<span className="flex items-center gap-1">
 								<CircleDot className="h-4 w-4" />
-								Picker: {currentPicker?.name || 'None'}
+								Dealer: {currentDealer?.name || 'None'}
 							</span>
 							<span>|</span>
 							<span className="flex items-center gap-1">
-								<CircleDot className="h-4 w-4" />
-								Dealer: {currentDealer?.name || 'None'}
+								<Play className="h-4 w-4" />
+								Picker: {currentPicker?.name || 'None'}
 							</span>
 							<span>Round: {currentRound}</span>
 						</div>

@@ -120,8 +120,8 @@ export const useGameStore = create<GameStore>()(
 				if (players.length >= 2) {
 					set({
 						gameStatus: 'playing',
-						currentRound: 1,
-						currentPickerIndex: 0
+						currentRound: 1
+						// Don't reset currentPickerIndex - preserve user's selection
 					})
 				}
 			},
