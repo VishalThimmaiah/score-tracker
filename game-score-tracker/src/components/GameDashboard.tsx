@@ -60,8 +60,9 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 					</Button>
 					<div className="flex-1 text-center">
 						<div className="flex items-center justify-center gap-2 mb-1">
-							<Image src="/logo.png" alt="Game Score Tracker" width={32} height={32} className="w-8 h-8" />
-							<h1 className="text-2xl font-bold text-foreground">Game Score Tracker</h1>
+							<Image src="/logo.png" alt="Deck Master" width={32} height={32} className="w-8 h-8" />
+							<h1 className="text-2xl font-bold text-foreground">Deck Master</h1>
+
 						</div>
 						<div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
 							<span className="flex items-center gap-1">

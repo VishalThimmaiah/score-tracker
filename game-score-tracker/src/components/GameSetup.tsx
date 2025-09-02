@@ -68,8 +68,8 @@ export default function GameSetup() {
 				<div className="flex items-center justify-between py-4">
 					<div className="flex-1 text-center">
 						<div className="flex items-center justify-center gap-3 mb-1">
-							<Image src="/logo.png" alt="Game Score Tracker" width={32} height={32} className="w-8 h-8" />
-							<h1 className="text-2xl font-bold text-foreground">Game Score Tracker</h1>
+							<Image src="/logo.png" alt="Deck Master" width={32} height={32} className="w-8 h-8" />
+							<h1 className="text-2xl font-bold text-foreground">Deck Master</h1>
 						</div>
 						<p className="text-sm text-muted-foreground">Set up your card game session</p>
 					</div>

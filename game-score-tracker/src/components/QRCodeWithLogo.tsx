@@ -126,7 +126,7 @@ const QRCodeWithLogo: React.FC<QRCodeWithLogoProps> = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Game Score Tracker</DialogTitle>
+          <DialogTitle>Share Deck Master</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center space-y-6">
           <div className={`relative bg-card p-8 rounded-xl shadow-sm border ${className}`}>
@@ -154,7 +154,7 @@ const QRCodeWithLogo: React.FC<QRCodeWithLogoProps> = ({
           </div>
           
           <p className="text-sm text-muted-foreground text-center">
-            Scan this QR code to open the Game Score Tracker app in your browser
+            Scan this QR code to open the Deck Master app in your browser
           </p>
           
           <div className="flex gap-2 w-full">
