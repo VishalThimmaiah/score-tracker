@@ -2,7 +2,7 @@
 
 import { Player } from '@/store/gameStore'
 import { Card, CardContent } from '@/components/ui/card'
-import { Crown, Skull, CircleDot } from 'lucide-react'
+import { Crown, Skull, CircleDot, Play } from 'lucide-react'
 
 interface PlayerCardProps {
 	player: Player
@@ -10,9 +10,10 @@ interface PlayerCardProps {
 	eliminationScore: number
 	isWinner?: boolean
 	isDealer?: boolean
+	isPicker?: boolean
 }
 
-export default function PlayerCard({ player, rank, eliminationScore, isWinner = false, isDealer = false }: PlayerCardProps) {
+export default function PlayerCard({ player, rank, eliminationScore, isWinner = false, isDealer = false, isPicker = false }: PlayerCardProps) {
 	// Calculate score percentage for color coding
 	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
 	
@@ -59,8 +60,25 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 		}
 	}
 
+	// Get picker badge color (different from dealer)
+	const getPickerBadgeColor = () => {
+		if (player.isEliminated) {
+			return 'bg-gray-700 dark:bg-gray-600 text-white'
+		}
+		
+		if (scorePercentage < 25) {
+			return 'bg-purple-600 dark:bg-purple-500 text-white'
+		} else if (scorePercentage < 50) {
+			return 'bg-indigo-600 dark:bg-indigo-500 text-white'
+		} else if (scorePercentage < 75) {
+			return 'bg-blue-600 dark:bg-blue-500 text-white'
+		} else {
+			return 'bg-violet-600 dark:bg-violet-500 text-white'
+		}
+	}
+
 	return (
-		<Card className={`${getBackgroundColor()} transition-all duration-300 py-0${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''}`}>
+		<Card className={`${getBackgroundColor()} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''}`}>
 			<CardContent className="p-4">
 				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center gap-3">
@@ -79,12 +97,20 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 						<div>
 							<div className="flex items-center gap-2">
 								<h3 className="font-semibold text-lg">{player.name}</h3>
-								{isDealer && (
-									<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getDealerBadgeColor()}`}>
-										<CircleDot className="h-3 w-3" />
-										<span>Dealer</span>
-									</div>
-								)}
+								<div className="flex items-center gap-1">
+									{isPicker && (
+										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getPickerBadgeColor()}`}>
+											<Play className="h-3 w-3" />
+											<span>Picker</span>
+										</div>
+									)}
+									{isDealer && (
+										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getDealerBadgeColor()}`}>
+											<CircleDot className="h-3 w-3" />
+											<span>Dealer</span>
+										</div>
+									)}
+								</div>
 							</div>
 							{player.isEliminated && (
 								<div className="flex items-center gap-1 text-sm opacity-75">

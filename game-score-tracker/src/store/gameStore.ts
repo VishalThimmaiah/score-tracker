@@ -19,7 +19,7 @@ export interface GameState {
 	gameSettings: GameSettings
 	gameStatus: 'setup' | 'playing' | 'finished'
 	currentRound: number
-	currentDealerIndex: number
+	currentPickerIndex: number
 }
 
 interface GameActions {
@@ -32,7 +32,7 @@ interface GameActions {
 
 	// Game actions
 	addRoundScores: (scores: { playerId: string; score: number }[]) => void
-	setCurrentDealerIndex: (index: number) => void
+	setCurrentPickerIndex: (index: number) => void
 	resetGame: () => void
 	pauseGame: () => void
 	clearScores: () => void
@@ -41,6 +41,9 @@ interface GameActions {
 	getPlayerById: (id: string) => Player | undefined
 	getSortedPlayers: () => Player[]
 	getWinner: () => Player | undefined
+	calculateDealerIndex: (pickerIndex: number) => number
+	getCurrentPicker: () => Player | undefined
+	getCurrentDealer: () => Player | undefined
 }
 
 type GameStore = GameState & GameActions
@@ -53,7 +56,7 @@ const initialState: GameState = {
 	},
 	gameStatus: 'setup',
 	currentRound: 0,
-	currentDealerIndex: 0
+	currentPickerIndex: 0
 }
 
 export const useGameStore = create<GameStore>()(
@@ -82,18 +85,18 @@ export const useGameStore = create<GameStore>()(
 					const playerIndex = state.players.findIndex(player => player.id === id)
 					const newPlayers = state.players.filter(player => player.id !== id)
 
-					// Adjust dealer index if necessary
-					let newDealerIndex = state.currentDealerIndex
-					if (playerIndex <= state.currentDealerIndex && newPlayers.length > 0) {
-						newDealerIndex = Math.max(0, state.currentDealerIndex - 1)
+					// Adjust picker index if necessary
+					let newPickerIndex = state.currentPickerIndex
+					if (playerIndex <= state.currentPickerIndex && newPlayers.length > 0) {
+						newPickerIndex = Math.max(0, state.currentPickerIndex - 1)
 					}
-					if (newDealerIndex >= newPlayers.length) {
-						newDealerIndex = 0
+					if (newPickerIndex >= newPlayers.length) {
+						newPickerIndex = 0
 					}
 
 					return {
 						players: newPlayers,
-						currentDealerIndex: newDealerIndex
+						currentPickerIndex: newPickerIndex
 					}
 				})
 			},
@@ -118,7 +121,7 @@ export const useGameStore = create<GameStore>()(
 					set({
 						gameStatus: 'playing',
 						currentRound: 1,
-						currentDealerIndex: 0
+						currentPickerIndex: 0
 					})
 				}
 			},
@@ -126,10 +129,7 @@ export const useGameStore = create<GameStore>()(
 			// Game actions
 			addRoundScores: (scores: { playerId: string; score: number }[]) => {
 				set((state) => {
-					const { players, currentDealerIndex } = state
-
-					// Advance dealer index
-					const nextDealerIndex = (currentDealerIndex + 1) % players.length
+					const { players, currentPickerIndex } = state
 
 					const updatedPlayers = players.map(player => {
 						const playerScore = scores.find(s => s.playerId === player.id)
@@ -148,6 +148,22 @@ export const useGameStore = create<GameStore>()(
 						return player
 					})
 
+					// Find next active picker
+					const findNextActivePicker = (currentIndex: number, playersList: Player[]) => {
+						const totalPlayers = playersList.length
+						let nextIndex = (currentIndex + 1) % totalPlayers
+						let attempts = 0
+
+						while (playersList[nextIndex].isEliminated && attempts < totalPlayers) {
+							nextIndex = (nextIndex + 1) % totalPlayers
+							attempts++
+						}
+
+						return nextIndex
+					}
+
+					const nextPickerIndex = findNextActivePicker(currentPickerIndex, updatedPlayers)
+
 					// Check if game should end (only one player left or all eliminated)
 					const currentActivePlayers = updatedPlayers.filter(p => !p.isEliminated)
 					const gameStatus = currentActivePlayers.length <= 1 ? 'finished' : 'playing'
@@ -155,14 +171,14 @@ export const useGameStore = create<GameStore>()(
 					return {
 						players: updatedPlayers,
 						currentRound: state.currentRound + 1,
-						currentDealerIndex: nextDealerIndex,
+						currentPickerIndex: nextPickerIndex,
 						gameStatus
 					}
 				})
 			},
 
-			setCurrentDealerIndex: (index: number) => {
-				set({ currentDealerIndex: index })
+			setCurrentPickerIndex: (index: number) => {
+				set({ currentPickerIndex: index })
 			},
 
 			resetGame: () => {
@@ -184,6 +200,7 @@ export const useGameStore = create<GameStore>()(
 						isEliminated: false
 					})),
 					currentRound: 0,
+					currentPickerIndex: 0,
 					gameStatus: 'setup'
 				}))
 			},
@@ -217,6 +234,32 @@ export const useGameStore = create<GameStore>()(
 				return players.reduce((winner, player) =>
 					player.totalScore < winner.totalScore ? player : winner
 				)
+			},
+
+			calculateDealerIndex: (pickerIndex: number) => {
+				const { players } = get()
+				if (players.length === 0) return 0
+
+				let dealerIndex = (pickerIndex - 1 + players.length) % players.length
+				let attempts = 0
+
+				while (players[dealerIndex].isEliminated && attempts < players.length) {
+					dealerIndex = (dealerIndex - 1 + players.length) % players.length
+					attempts++
+				}
+
+				return dealerIndex
+			},
+
+			getCurrentPicker: () => {
+				const { players, currentPickerIndex } = get()
+				return players[currentPickerIndex]
+			},
+
+			getCurrentDealer: () => {
+				const { players, currentPickerIndex } = get()
+				const dealerIndex = get().calculateDealerIndex(currentPickerIndex)
+				return players[dealerIndex]
 			}
 		}),
 		{

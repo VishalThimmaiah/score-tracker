@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Users, Target, GripVertical } from 'lucide-react'
+import { Plus, Trash2, Users, Target, GripVertical, Play } from 'lucide-react'
 import QRCodeWithLogo from './QRCodeWithLogo'
 import { ThemeToggle } from './ThemeToggle'
 import {
@@ -95,6 +95,7 @@ export default function GameSetup() {
 		addPlayer, 
 		removePlayer, 
 		setPlayerOrder,
+		setCurrentPickerIndex,
 		setEliminationScore, 
 		startGame 
 	} = useGameStore()
@@ -128,6 +129,13 @@ export default function GameSetup() {
 			
 			setEliminationScore(scoreValue)
 			startGame()
+		}
+	}
+
+	const handlePickerChange = (playerId: string) => {
+		const playerIndex = players.findIndex(p => p.id === playerId)
+		if (playerIndex !== -1) {
+			setCurrentPickerIndex(playerIndex)
 		}
 	}
 
@@ -265,6 +273,46 @@ export default function GameSetup() {
 						)}
 					</CardContent>
 				</Card>
+
+				{/* Picker Selection */}
+				{players.length >= 2 && (
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<Play className="h-5 w-5" />
+								Who Picks First?
+							</CardTitle>
+							<CardDescription>
+								Select the player who will pick first in the game
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<div className="space-y-2">
+								{players.map((player, index) => (
+									<label
+										key={player.id}
+										className="flex items-center gap-3 p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80 transition-colors"
+									>
+										<input
+											type="radio"
+											name="picker"
+											value={player.id}
+											defaultChecked={index === 0}
+											onChange={() => handlePickerChange(player.id)}
+											className="w-4 h-4 text-primary"
+										/>
+										<div className="flex items-center gap-3">
+											<div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
+												{index + 1}
+											</div>
+											<span className="font-medium text-foreground">{player.name}</span>
+										</div>
+									</label>
+								))}
+							</div>
+						</CardContent>
+					</Card>
+				)}
 
 				{/* Elimination Score Validation */}
 				{!isValidEliminationScore() && (

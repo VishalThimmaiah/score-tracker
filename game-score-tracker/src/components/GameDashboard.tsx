@@ -35,16 +35,18 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 		gameSettings, 
 		gameStatus, 
 		currentRound,
-		currentDealerIndex,
 		getSortedPlayers, 
 		getWinner,
+		getCurrentPicker,
+		getCurrentDealer,
 		resetGame 
 	} = useGameStore()
 
 	const sortedPlayers = getSortedPlayers()
 	const winner = getWinner()
 	const activePlayers = players.filter(p => !p.isEliminated)
-	const currentDealer = players[currentDealerIndex]
+	const currentPicker = getCurrentPicker()
+	const currentDealer = getCurrentDealer()
 
 
 	return (
@@ -66,13 +68,17 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							<h1 className="text-2xl font-bold text-foreground">Deck Master</h1>
 
 						</div>
-						<div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+						<div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
+							<span className="flex items-center gap-1">
+								<CircleDot className="h-4 w-4" />
+								Picker: {currentPicker?.name || 'None'}
+							</span>
+							<span>|</span>
 							<span className="flex items-center gap-1">
 								<CircleDot className="h-4 w-4" />
 								Dealer: {currentDealer?.name || 'None'}
 							</span>
 							<span>Round: {currentRound}</span>
-							<span>Target: {gameSettings.eliminationScore}</span>
 						</div>
 					</div>
 					<div className="w-8">
@@ -151,6 +157,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							rank={index + 1}
 							eliminationScore={gameSettings.eliminationScore}
 							isWinner={gameStatus === 'finished' && winner?.id === player.id}
+							isPicker={player.id === currentPicker?.id}
 							isDealer={player.id === currentDealer?.id}
 						/>
 					))}
