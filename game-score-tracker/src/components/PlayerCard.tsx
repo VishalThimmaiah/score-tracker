@@ -42,8 +42,25 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 		return 'bg-red-500 dark:bg-red-400'
 	}
 
+	// Get dealer badge color that matches the theme
+	const getDealerBadgeColor = () => {
+		if (player.isEliminated) {
+			return 'bg-gray-600 dark:bg-gray-500 text-white'
+		}
+		
+		if (scorePercentage < 25) {
+			return 'bg-green-600 dark:bg-green-500 text-white'
+		} else if (scorePercentage < 50) {
+			return 'bg-yellow-600 dark:bg-yellow-500 text-white'
+		} else if (scorePercentage < 75) {
+			return 'bg-orange-600 dark:bg-orange-500 text-white'
+		} else {
+			return 'bg-red-600 dark:bg-red-500 text-white'
+		}
+	}
+
 	return (
-		<Card className={`${getBackgroundColor()} transition-all duration-300 py-3 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''}`}>
+		<Card className={`${getBackgroundColor()} transition-all duration-300 py-0${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''}`}>
 			<CardContent className="p-4">
 				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center gap-3">
@@ -63,7 +80,7 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 							<div className="flex items-center gap-2">
 								<h3 className="font-semibold text-lg">{player.name}</h3>
 								{isDealer && (
-									<div className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white text-xs rounded-full">
+									<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getDealerBadgeColor()}`}>
 										<CircleDot className="h-3 w-3" />
 										<span>Dealer</span>
 									</div>
@@ -100,18 +117,6 @@ export default function PlayerCard({ player, rank, eliminationScore, isWinner = 
 						/>
 					</div>
 				</div>
-
-				{/* Last Round Score */}
-				{player.scores.length > 0 && (
-					<div className="mt-2 pt-2 border-t border-current/20">
-						<div className="flex justify-between text-sm">
-							<span className="opacity-75">Last round:</span>
-							<span className="font-medium">
-								+{player.scores[player.scores.length - 1]}
-							</span>
-						</div>
-					</div>
-				)}
 
 				{/* Winner Badge */}
 				{isWinner && (
