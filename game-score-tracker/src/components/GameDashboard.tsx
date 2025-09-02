@@ -69,15 +69,20 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 
 						</div>
 						<div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
-							<span className="flex items-center gap-1">
-								<CircleDot className="h-4 w-4" />
-								Dealer: {currentDealer?.name || 'None'}
-							</span>
-							<span>|</span>
-							<span className="flex items-center gap-1">
-								<Play className="h-4 w-4" />
-								Picker: {currentPicker?.name || 'None'}
-							</span>
+							{gameStatus !== 'finished' && (
+								<>
+									<span className="flex items-center gap-1">
+										<CircleDot className="h-4 w-4" />
+										Dealer: {currentDealer?.name || 'None'}
+									</span>
+									<span>|</span>
+									<span className="flex items-center gap-1">
+										<Play className="h-4 w-4" />
+										Picker: {currentPicker?.name || 'None'}
+									</span>
+									<span>|</span>
+								</>
+							)}
 							<span>Round: {currentRound}</span>
 						</div>
 					</div>
@@ -157,6 +162,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							rank={index + 1}
 							eliminationScore={gameSettings.eliminationScore}
 							gameMode={gameSettings.gameMode}
+							gameStatus={gameStatus}
 							isWinner={gameStatus === 'finished' && winner?.id === player.id}
 							isPicker={player.id === currentPicker?.id}
 							isDealer={player.id === currentDealer?.id}

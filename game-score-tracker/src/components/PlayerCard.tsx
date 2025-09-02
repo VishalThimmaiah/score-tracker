@@ -9,12 +9,13 @@ interface PlayerCardProps {
 	rank: number
 	eliminationScore: number
 	gameMode: GameMode
+	gameStatus: 'setup' | 'playing' | 'finished'
 	isWinner?: boolean
 	isDealer?: boolean
 	isPicker?: boolean
 }
 
-export default function PlayerCard({ player, rank, eliminationScore, gameMode, isWinner = false, isDealer = false, isPicker = false }: PlayerCardProps) {
+export default function PlayerCard({ player, rank, eliminationScore, gameMode, gameStatus, isWinner = false, isDealer = false, isPicker = false }: PlayerCardProps) {
 	// Calculate score percentage for color coding
 	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
 	
@@ -141,13 +142,13 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, i
 							<div className="flex items-center gap-2">
 								<h3 className="font-semibold text-lg">{player.name}</h3>
 								<div className="flex items-center gap-1">
-									{isPicker && (
+									{gameStatus !== 'finished' && isPicker && (
 										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getPickerBadgeColor()}`}>
 											<Play className="h-3 w-3" />
 											<span>Picker</span>
 										</div>
 									)}
-									{isDealer && (
+									{gameStatus !== 'finished' && isDealer && (
 										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getDealerBadgeColor()}`}>
 											<CircleDot className="h-3 w-3" />
 											<span>Dealer</span>
