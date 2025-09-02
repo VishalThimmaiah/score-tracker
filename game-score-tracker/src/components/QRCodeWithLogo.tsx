@@ -14,7 +14,7 @@ interface QRCodeWithLogoProps {
 }
 
 const QRCodeWithLogo: React.FC<QRCodeWithLogoProps> = ({
-  url = 'https://scoretracker.vishalthimmaiah.com',
+  url = 'https://deckmaster.vishalthimmaiah.com',
   size = 200,
   className = ''
 }) => {

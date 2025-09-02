@@ -7,7 +7,7 @@ import { Delete, X, Check } from 'lucide-react'
 
 interface FloatingKeypadProps {
 	isVisible: boolean
-	position: { x: number; y: number }
+	position: { x?: number; y?: number; useCSSPositioning?: boolean }
 	currentValue: string
 	playerName?: string
 	onNumberPress: (digit: string) => void
@@ -44,15 +44,31 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 	if (!isVisible) return null
 
 	return (
-		<div
-			className="fixed z-50 animate-in fade-in-0 zoom-in-95 duration-200"
-			style={{
-				left: position.x,
-				top: position.y
-			}}
-		>
-			<Card className="w-56 shadow-lg border-2 bg-card">
-				<CardContent className="p-4">
+		<>
+			{/* Backdrop - Click to close */}
+			<div 
+				className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm animate-in fade-in-0 duration-200 cursor-pointer" 
+				onClick={onCancel}
+			/>
+			
+			{/* Keypad */}
+			<div
+				className={`fixed z-50 animate-in fade-in-0 zoom-in-95 duration-200 ${
+					position.useCSSPositioning 
+						? 'left-1/2 bottom-20 -translate-x-1/2' 
+						: ''
+				}`}
+				style={
+					position.useCSSPositioning 
+						? {} 
+						: {
+							left: `${position.x}px`,
+							top: `${position.y}px`
+						}
+				}
+			>
+				<Card className="w-56 shadow-xl border-2 bg-card">
+				<CardContent className="px-4">
 					{/* Header */}
 					<div className="flex items-center justify-between mb-3">
 						<div className="text-sm font-medium text-muted-foreground truncate">
@@ -145,5 +161,6 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 				</CardContent>
 			</Card>
 		</div>
+		</>
 	)
 })

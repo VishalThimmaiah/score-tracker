@@ -9,9 +9,15 @@ export interface Player {
 	isEliminated: boolean
 }
 
+export type GameType = '5-cards' | 'secret-7' | 'custom'
+export type GameMode = 'points-based' | 'rounds-based'
+
 export interface GameSettings {
+	gameType: GameType
+	gameMode: GameMode
 	eliminationScore: number
 	lastEliminationScore: number
+	maxRounds?: number
 }
 
 export interface GameState {
@@ -19,17 +25,23 @@ export interface GameState {
 	gameSettings: GameSettings
 	gameStatus: 'setup' | 'playing' | 'finished'
 	currentRound: number
+	currentPickerIndex: number
 }
 
 interface GameActions {
 	// Setup actions
 	addPlayer: (name: string) => void
 	removePlayer: (id: string) => void
+	setPlayerOrder: (players: Player[]) => void
 	setEliminationScore: (score: number) => void
+	setGameType: (gameType: GameType) => void
+	setGameMode: (gameMode: GameMode) => void
+	setMaxRounds: (rounds: number) => void
 	startGame: () => void
 
 	// Game actions
 	addRoundScores: (scores: { playerId: string; score: number }[]) => void
+	setCurrentPickerIndex: (index: number) => void
 	resetGame: () => void
 	pauseGame: () => void
 	clearScores: () => void
@@ -38,6 +50,9 @@ interface GameActions {
 	getPlayerById: (id: string) => Player | undefined
 	getSortedPlayers: () => Player[]
 	getWinner: () => Player | undefined
+	calculateDealerIndex: (pickerIndex: number) => number
+	getCurrentPicker: () => Player | undefined
+	getCurrentDealer: () => Player | undefined
 }
 
 type GameStore = GameState & GameActions
@@ -45,11 +60,14 @@ type GameStore = GameState & GameActions
 const initialState: GameState = {
 	players: [],
 	gameSettings: {
+		gameType: '5-cards',
+		gameMode: 'points-based',
 		eliminationScore: 100,
 		lastEliminationScore: 100
 	},
 	gameStatus: 'setup',
-	currentRound: 0
+	currentRound: 0,
+	currentPickerIndex: 0
 }
 
 export const useGameStore = create<GameStore>()(
@@ -74,9 +92,28 @@ export const useGameStore = create<GameStore>()(
 			},
 
 			removePlayer: (id: string) => {
-				set((state) => ({
-					players: state.players.filter(player => player.id !== id)
-				}))
+				set((state) => {
+					const playerIndex = state.players.findIndex(player => player.id === id)
+					const newPlayers = state.players.filter(player => player.id !== id)
+
+					// Adjust picker index if necessary
+					let newPickerIndex = state.currentPickerIndex
+					if (playerIndex <= state.currentPickerIndex && newPlayers.length > 0) {
+						newPickerIndex = Math.max(0, state.currentPickerIndex - 1)
+					}
+					if (newPickerIndex >= newPlayers.length) {
+						newPickerIndex = 0
+					}
+
+					return {
+						players: newPlayers,
+						currentPickerIndex: newPickerIndex
+					}
+				})
+			},
+
+			setPlayerOrder: (players: Player[]) => {
+				set({ players })
 			},
 
 			setEliminationScore: (score: number) => {
@@ -89,12 +126,44 @@ export const useGameStore = create<GameStore>()(
 				}))
 			},
 
+			setGameType: (gameType: GameType) => {
+				set((state) => ({
+					gameSettings: {
+						...state.gameSettings,
+						gameType,
+						// Set default game mode based on game type
+						gameMode: gameType === 'secret-7' ? 'rounds-based' : 'points-based',
+						// Set default max rounds for Secret 7
+						maxRounds: gameType === 'secret-7' ? 7 : state.gameSettings.maxRounds
+					}
+				}))
+			},
+
+			setGameMode: (gameMode: GameMode) => {
+				set((state) => ({
+					gameSettings: {
+						...state.gameSettings,
+						gameMode
+					}
+				}))
+			},
+
+			setMaxRounds: (rounds: number) => {
+				set((state) => ({
+					gameSettings: {
+						...state.gameSettings,
+						maxRounds: rounds
+					}
+				}))
+			},
+
 			startGame: () => {
 				const { players } = get()
 				if (players.length >= 2) {
 					set({
 						gameStatus: 'playing',
 						currentRound: 1
+						// Don't reset currentPickerIndex - preserve user's selection
 					})
 				}
 			},
@@ -102,12 +171,17 @@ export const useGameStore = create<GameStore>()(
 			// Game actions
 			addRoundScores: (scores: { playerId: string; score: number }[]) => {
 				set((state) => {
-					const updatedPlayers = state.players.map(player => {
+					const { players, currentPickerIndex, gameSettings } = state
+					const { gameType, gameMode, eliminationScore, maxRounds } = gameSettings
+
+					const updatedPlayers = players.map(player => {
 						const playerScore = scores.find(s => s.playerId === player.id)
 						if (playerScore) {
 							const newScores = [...player.scores, playerScore.score]
 							const newTotalScore = newScores.reduce((sum, score) => sum + score, 0)
-							const isEliminated = newTotalScore >= state.gameSettings.eliminationScore
+
+							// Only apply elimination logic for points-based games
+							const isEliminated = gameMode === 'points-based' && newTotalScore >= eliminationScore
 
 							return {
 								...player,
@@ -119,16 +193,48 @@ export const useGameStore = create<GameStore>()(
 						return player
 					})
 
-					// Check if game should end (only one player left or all eliminated)
-					const activePlayers = updatedPlayers.filter(p => !p.isEliminated)
-					const gameStatus = activePlayers.length <= 1 ? 'finished' : 'playing'
+					// Find next active picker (skip eliminated players only in points-based games)
+					const findNextActivePicker = (currentIndex: number, playersList: Player[]) => {
+						const totalPlayers = playersList.length
+						let nextIndex = (currentIndex + 1) % totalPlayers
+						let attempts = 0
+
+						// Only skip eliminated players in points-based games
+						while (gameMode === 'points-based' && playersList[nextIndex].isEliminated && attempts < totalPlayers) {
+							nextIndex = (nextIndex + 1) % totalPlayers
+							attempts++
+						}
+
+						return nextIndex
+					}
+
+					const nextPickerIndex = findNextActivePicker(currentPickerIndex, updatedPlayers)
+					const newRound = state.currentRound + 1
+
+					// Determine game status based on game type and mode
+					let gameStatus: 'setup' | 'playing' | 'finished' = 'playing'
+
+					if (gameMode === 'points-based') {
+						// Points-based: End when only one player left or all eliminated
+						const currentActivePlayers = updatedPlayers.filter(p => !p.isEliminated)
+						gameStatus = currentActivePlayers.length <= 1 ? 'finished' : 'playing'
+					} else if (gameMode === 'rounds-based') {
+						// Rounds-based: End when max rounds reached
+						const targetRounds = gameType === 'secret-7' ? 7 : (maxRounds || 7)
+						gameStatus = newRound > targetRounds ? 'finished' : 'playing'
+					}
 
 					return {
 						players: updatedPlayers,
-						currentRound: state.currentRound + 1,
+						currentRound: newRound,
+						currentPickerIndex: nextPickerIndex,
 						gameStatus
 					}
 				})
+			},
+
+			setCurrentPickerIndex: (index: number) => {
+				set({ currentPickerIndex: index })
 			},
 
 			resetGame: () => {
@@ -150,6 +256,7 @@ export const useGameStore = create<GameStore>()(
 						isEliminated: false
 					})),
 					currentRound: 0,
+					currentPickerIndex: 0,
 					gameStatus: 'setup'
 				}))
 			},
@@ -171,18 +278,53 @@ export const useGameStore = create<GameStore>()(
 			},
 
 			getWinner: () => {
-				const { players, gameStatus } = get()
+				const { players, gameStatus, gameSettings } = get()
 				if (gameStatus !== 'finished') return undefined
 
-				const activePlayers = players.filter(p => !p.isEliminated)
-				if (activePlayers.length === 1) {
-					return activePlayers[0]
+				const { gameMode } = gameSettings
+
+				if (gameMode === 'points-based') {
+					// Points-based: Winner is last active player, or lowest score if all eliminated
+					const activePlayers = players.filter(p => !p.isEliminated)
+					if (activePlayers.length === 1) {
+						return activePlayers[0]
+					}
+					// If all players are eliminated, winner is the one with lowest score
+					return players.reduce((winner, player) =>
+						player.totalScore < winner.totalScore ? player : winner
+					)
+				} else {
+					// Rounds-based: Winner is always the player with lowest total score
+					return players.reduce((winner, player) =>
+						player.totalScore < winner.totalScore ? player : winner
+					)
+				}
+			},
+
+			calculateDealerIndex: (pickerIndex: number) => {
+				const { players } = get()
+				if (players.length === 0) return 0
+
+				let dealerIndex = (pickerIndex - 1 + players.length) % players.length
+				let attempts = 0
+
+				while (players[dealerIndex].isEliminated && attempts < players.length) {
+					dealerIndex = (dealerIndex - 1 + players.length) % players.length
+					attempts++
 				}
 
-				// If all players are eliminated, winner is the one with lowest score
-				return players.reduce((winner, player) =>
-					player.totalScore < winner.totalScore ? player : winner
-				)
+				return dealerIndex
+			},
+
+			getCurrentPicker: () => {
+				const { players, currentPickerIndex } = get()
+				return players[currentPickerIndex]
+			},
+
+			getCurrentDealer: () => {
+				const { players, currentPickerIndex } = get()
+				const dealerIndex = get().calculateDealerIndex(currentPickerIndex)
+				return players[dealerIndex]
 			}
 		}),
 		{

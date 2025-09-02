@@ -43,7 +43,6 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 		position: keypadPosition,
 		activePlayerId,
 		currentValue: keypadValue,
-		containerRef,
 		showKeypad,
 		hideKeypad,
 		handleNumberPress,
@@ -136,7 +135,7 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 	const activePlayer = activePlayers.find(p => p.id === activePlayerId)
 
 	return (
-		<div ref={containerRef} className="fixed inset-0 z-50 bg-white dark:bg-black flex flex-col">
+		<div className="fixed inset-0 z-50 bg-white dark:bg-black flex flex-col">
 			{/* Header */}
 			<div className="border-b bg-background flex-shrink-0">
 				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

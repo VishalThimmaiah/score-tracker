@@ -20,7 +20,7 @@ import PlayerCard from './PlayerCard'
 import ScoreEntrySheet from './ScoreEntrySheet'
 import ActionSheet from './ActionSheet'
 import { ThemeToggle } from './ThemeToggle'
-import { Plus, RotateCcw, Trophy, History, Users, Menu } from 'lucide-react'
+import { Plus, RotateCcw, Trophy, History, Menu, CircleDot, Play } from 'lucide-react'
 
 interface GameDashboardProps {
 	onShowHistory: () => void
@@ -37,12 +37,16 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 		currentRound,
 		getSortedPlayers, 
 		getWinner,
+		getCurrentPicker,
+		getCurrentDealer,
 		resetGame 
 	} = useGameStore()
 
 	const sortedPlayers = getSortedPlayers()
 	const winner = getWinner()
 	const activePlayers = players.filter(p => !p.isEliminated)
+	const currentPicker = getCurrentPicker()
+	const currentDealer = getCurrentDealer()
 
 
 	return (
@@ -64,14 +68,21 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							<h1 className="text-2xl font-bold text-foreground">Deck Master</h1>
 
 						</div>
-						<div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-							<span className="flex items-center gap-1">
-								<Users className="h-4 w-4" />
-								{activePlayers.length} active
-							</span>
-							<span>Round: {currentRound}</span>
-							<span>Target: {gameSettings.eliminationScore}</span>
-						</div>
+						{gameStatus !== 'finished' && (
+							<div className="flex items-center justify-center gap-3 text-sm text-muted-foreground">
+								<span className="flex items-center gap-1">
+									<CircleDot className="h-4 w-4" />
+									Dealer: {currentDealer?.name || 'None'}
+								</span>
+								<span>|</span>
+								<span className="flex items-center gap-1">
+									<Play className="h-4 w-4" />
+									Picker: {currentPicker?.name || 'None'}
+								</span>
+								<span>|</span>
+								<span>Round: {currentRound}</span>
+							</div>
+						)}
 					</div>
 					<div className="w-8">
 						<ThemeToggle />
@@ -148,7 +159,11 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							player={player}
 							rank={index + 1}
 							eliminationScore={gameSettings.eliminationScore}
+							gameMode={gameSettings.gameMode}
+							gameStatus={gameStatus}
 							isWinner={gameStatus === 'finished' && winner?.id === player.id}
+							isPicker={player.id === currentPicker?.id}
+							isDealer={player.id === currentDealer?.id}
 						/>
 					))}
 				</div>
@@ -164,18 +179,33 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 								<span className="text-muted-foreground">Rounds Played:</span>
 								<div className="font-semibold text-foreground">{Math.max(0, currentRound - 1)}</div>
 							</div>
-							<div>
-								<span className="text-muted-foreground">Active Players:</span>
-								<div className="font-semibold text-foreground">{activePlayers.length}</div>
-							</div>
-							<div>
-								<span className="text-muted-foreground">Eliminated:</span>
-								<div className="font-semibold text-foreground">{players.length - activePlayers.length}</div>
-							</div>
+							{gameSettings.gameMode === 'rounds-based' && (
+								<div>
+									<span className="text-muted-foreground">Total Rounds:</span>
+									<div className="font-semibold text-foreground">
+										{gameSettings.gameType === 'secret-7' ? 7 : (gameSettings.maxRounds || 7)}
+									</div>
+								</div>
+							)}
+							{gameSettings.gameMode === 'points-based' && (
+								<>
+									<div>
+										<span className="text-muted-foreground">Active Players:</span>
+										<div className="font-semibold text-foreground">{activePlayers.length}</div>
+									</div>
+									<div>
+										<span className="text-muted-foreground">Eliminated:</span>
+										<div className="font-semibold text-foreground">{players.length - activePlayers.length}</div>
+									</div>
+								</>
+							)}
 							<div>
 								<span className="text-muted-foreground">Leader:</span>
 								<div className="font-semibold text-foreground">
-									{sortedPlayers.find(p => !p.isEliminated)?.name || 'None'}
+									{gameSettings.gameMode === 'points-based' 
+										? (sortedPlayers.find(p => !p.isEliminated)?.name || 'None')
+										: (sortedPlayers[0]?.name || 'None')
+									}
 								</div>
 							</div>
 						</div>
@@ -186,7 +216,12 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				{gameStatus === 'playing' && currentRound === 1 && (
 					<div className="text-center text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
 						<p>Tap &quot;Add Round Scores&quot; to enter points for each player.</p>
-						<p>Lower scores are better • Players eliminated at {gameSettings.eliminationScore} points</p>
+						{gameSettings.gameMode === 'points-based' && (
+							<p>Lower scores are better • Players eliminated at {gameSettings.eliminationScore} points</p>
+						)}
+						{gameSettings.gameMode === 'rounds-based' && (
+							<p>Lower scores are better • Game lasts {gameSettings.gameType === 'secret-7' ? 7 : (gameSettings.maxRounds || 7)} rounds</p>
+						)}
 					</div>
 				)}
 			</div>

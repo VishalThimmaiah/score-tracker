@@ -1,0 +1,59 @@
+{
+	"name": "Deck Master - Card Game Scoring",
+	"short_name": "Deck Master",
+	"description": "Track scores for card games like 5 Cards, Secret 7, and custom variants. Simple, elegant scoring with player elimination and game history.",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#000000",
+	"theme_color": "#000000",
+	"orientation": "portrait",
+	"scope": "/",
+	"lang": "en",
+	"categories": [
+		"games",
+		"utilities"
+	],
+	"icons": [
+		{
+			"src": "/logo.png",
+			"sizes": "126x122",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any maskable"
+		}
+	],
+	"screenshots": [
+		{
+			"src": "/screenshot-mobile.png",
+			"sizes": "390x844",
+			"type": "image/png",
+			"form_factor": "narrow"
+		}
+	],
+	"shortcuts": [
+		{
+			"name": "New Game",
+			"short_name": "New Game",
+			"description": "Start a new card game",
+			"url": "/",
+			"icons": [
+				{
+					"src": "/logo.png",
+					"sizes": "126x122"
+				}
+			]
+		}
+	],
+	"prefer_related_applications": false
+}
