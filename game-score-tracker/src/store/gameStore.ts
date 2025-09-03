@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { GAME_TYPE_STRATEGIES } from '@/strategies/gameTypeStrategies'
+import { WINNER_CALCULATORS } from '@/strategies/winnerCalculators'
 
 export interface Player {
 	id: string
@@ -153,21 +155,10 @@ export const useGameStore = create<GameStore>()(
 						newSettings.customGameMode = currentSettings.gameMode
 					}
 
-					// Apply game type specific settings
-					if (gameType === '5-cards') {
-						newSettings.gameMode = 'points-based'
-						newSettings.eliminationScore = 100
-						newSettings.maxRounds = undefined
-					} else if (gameType === 'secret-7') {
-						newSettings.gameMode = 'rounds-based'
-						newSettings.maxRounds = 7
-						newSettings.eliminationScore = currentSettings.eliminationScore
-					} else if (gameType === 'custom') {
-						// Restore custom preferences
-						newSettings.gameMode = currentSettings.customGameMode
-						newSettings.eliminationScore = currentSettings.customEliminationScore
-						newSettings.maxRounds = currentSettings.customMaxRounds
-					}
+					// Apply game type specific settings using Strategy Pattern
+					const strategy = GAME_TYPE_STRATEGIES[gameType]
+					const strategySettings = strategy.applySettings(currentSettings)
+					Object.assign(newSettings, strategySettings)
 
 					return { gameSettings: newSettings }
 				})
@@ -319,22 +310,9 @@ export const useGameStore = create<GameStore>()(
 				const { players, gameStatus, gameSettings } = get()
 				if (gameStatus !== 'finished') return []
 
-				const { gameMode } = gameSettings
-
-				if (gameMode === 'points-based') {
-					// Points-based: Winner is last active player, or lowest score if all eliminated
-					const activePlayers = players.filter(p => !p.isEliminated)
-					if (activePlayers.length === 1) {
-						return activePlayers
-					}
-					// If all players are eliminated, find all players with lowest score
-					const lowestScore = Math.min(...players.map(p => p.totalScore))
-					return players.filter(p => p.totalScore === lowestScore)
-				} else {
-					// Rounds-based: Find all players with lowest total score
-					const lowestScore = Math.min(...players.map(p => p.totalScore))
-					return players.filter(p => p.totalScore === lowestScore)
-				}
+				// Use polymorphic winner calculator based on game mode
+				const calculator = WINNER_CALCULATORS[gameSettings.gameMode]
+				return calculator.calculateWinners(players)
 			},
 
 			calculateDealerIndex: (pickerIndex: number) => {

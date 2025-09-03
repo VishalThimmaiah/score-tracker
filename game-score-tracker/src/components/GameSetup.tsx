@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useGameStore } from '@/store/gameStore'
+import { canStartGame, getValidationError, validateEliminationScore } from '@/utils/gameValidation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -152,18 +153,16 @@ export default function GameSetup() {
 	}
 
 	const handleStartGame = () => {
-		if (players.length >= 2) {
-			const eliminationScore = eliminationScoreRef.current?.value
-			const scoreValue = (eliminationScore ? Number(eliminationScore) : gameSettings.eliminationScore) || 100
-			
-			// Prevent starting game if elimination score is 0
-			if (scoreValue <= 0) {
-				return
-			}
-			
-			setEliminationScore(scoreValue)
-			startGame()
+		const eliminationScore = eliminationScoreRef.current?.value
+		
+		// Use guard clause validation - early return if game cannot start
+		if (!canStartGame(gameSettings, players.length, eliminationScore)) {
+			return
 		}
+		
+		const scoreValue = (eliminationScore ? Number(eliminationScore) : gameSettings.eliminationScore) || 100
+		setEliminationScore(scoreValue)
+		startGame()
 	}
 
 	const handlePickerChange = (playerId: string) => {
@@ -181,29 +180,15 @@ export default function GameSetup() {
 	}
 
 	const isValidEliminationScore = () => {
-		// For rounds-based games, elimination score is not relevant
-		if (gameSettings.gameMode === 'rounds-based') {
-			return true
-		}
-		
 		const eliminationScore = eliminationScoreRef.current?.value
-		const scoreValue = eliminationScore ? Number(eliminationScore) : gameSettings.eliminationScore
-		return scoreValue > 0
+		const result = validateEliminationScore(gameSettings, eliminationScore || String(gameSettings.eliminationScore))
+		return result.isValid
 	}
 
 	const isValidGameSettings = () => {
-		// Check if elimination score is valid for points-based games
-		if (gameSettings.gameMode === 'points-based' && !isValidEliminationScore()) {
-			return false
-		}
-		
-		// Check if max rounds is valid for rounds-based games
-		if (gameSettings.gameMode === 'rounds-based') {
-			const maxRounds = gameSettings.maxRounds || 7
-			return maxRounds > 0
-		}
-		
-		return true
+		const eliminationScore = eliminationScoreRef.current?.value
+		const result = canStartGame(gameSettings, players.length, eliminationScore)
+		return result
 	}
 
 	const handleDragEnd = (event: DragEndEvent) => {
@@ -506,12 +491,7 @@ export default function GameSetup() {
 				{/* Game Settings Validation */}
 				{!isValidGameSettings() && (
 					<div className="text-sm text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20 p-2 rounded">
-						{gameSettings.gameMode === 'points-based' && !isValidEliminationScore() && (
-							<p>Elimination score must be greater than 0 to start the game</p>
-						)}
-						{gameSettings.gameMode === 'rounds-based' && (!gameSettings.maxRounds || gameSettings.maxRounds <= 0) && (
-							<p>Number of rounds must be greater than 0</p>
-						)}
+						<p>{getValidationError(gameSettings, players.length, eliminationScoreRef.current?.value)}</p>
 					</div>
 				)}
 
