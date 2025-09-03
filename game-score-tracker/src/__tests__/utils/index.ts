@@ -1,5 +1,5 @@
 // Main testing framework exports
-export { gameFlow, GameFlowBuilder, createTestStore } from './game-flow'
+export { gameFlow, GameFlowBuilder } from './game-flow'
 
 // Mock data utilities
 export {

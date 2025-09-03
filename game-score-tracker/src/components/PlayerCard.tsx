@@ -3,6 +3,7 @@
 import { Player, GameMode, GameType, ScoreDifference } from '@/store/gameStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Crown, Skull, CircleDot, Play } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface PlayerCardProps {
 	player: Player
@@ -106,8 +107,31 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 	}
 
 	return (
-		<Card className={`py-0 ${getBackgroundColor()} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''}`}>
-			<CardContent className="p-4">
+		<motion.div
+			whileTap={{ scale: 0.98 }}
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ 
+				opacity: 1, 
+				y: 0,
+				scale: [1, 1.01, 1] // Subtle breathing effect
+			}}
+			transition={{ 
+				type: "spring", 
+				stiffness: 300, 
+				damping: 20,
+				scale: {
+					duration: 3,
+					repeat: Infinity,
+					repeatType: "reverse",
+					ease: "easeInOut"
+				}
+			}}
+		>
+			<Card className={`py-0 ${getBackgroundColor()} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''} 
+				relative overflow-hidden
+				before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent 
+				before:translate-x-[-100%] before:animate-pulse`}>
+				<CardContent className="p-4 relative z-10">
 				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center gap-3">
 						{/* Rank Badge */}
@@ -194,7 +218,8 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 						</div>
 					</div>
 				)}
-			</CardContent>
-		</Card>
+				</CardContent>
+			</Card>
+		</motion.div>
 	)
 }
