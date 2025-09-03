@@ -1,3 +1,5 @@
+// @ts-nocheck
+// Service Worker runs in a different context than the main thread
 const CACHE_NAME = 'deck-master-v1';
 const urlsToCache = [
   '/',
@@ -9,53 +11,27 @@ const urlsToCache = [
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
+  console.log('Service Worker: Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Opened cache');
+        console.log('Service Worker: Cache opened');
         return cache.addAll(urlsToCache);
+      })
+      .catch((error) => {
+        console.error('Service Worker: Cache failed to open', error);
       })
   );
   self.skipWaiting();
 });
 
-// Fetch event - serve from cache when offline
+// Fetch event - COMPLETELY DISABLED FOR DEVELOPMENT
+// During development, let the browser handle all requests normally
+// This prevents any interference with Next.js hot reloading and CSS loading
 self.addEventListener('fetch', (event) => {
-  // Only handle HTTP/HTTPS requests
-  if (!event.request.url.startsWith('http')) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then((response) => {
-          // Check if we received a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        }).catch(() => {
-          // If both cache and network fail, return offline page for navigation requests
-          if (event.request.destination === 'document') {
-            return caches.match('/');
-          }
-        });
-      })
-  );
+  // Do nothing - let all requests pass through to the network
+  // This ensures CSS, JS, and other resources load normally during development
+  return;
 });
 
 // Activate event - clean up old caches

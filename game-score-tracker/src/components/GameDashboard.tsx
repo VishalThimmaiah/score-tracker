@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,6 +20,10 @@ import {
 import PlayerCard from './PlayerCard'
 import ScoreEntrySheet from './ScoreEntrySheet'
 import ActionSheet from './ActionSheet'
+import WinnerCelebration from './WinnerCelebration'
+import AnimatedGrid from './ui/animated-grid'
+import AmbientParticles from './ui/ambient-particles'
+import RippleEffect from './ui/ripple-effect'
 import { ThemeToggle } from './ThemeToggle'
 import { Plus, RotateCcw, Trophy, History, Menu, CircleDot, Play } from 'lucide-react'
 
@@ -29,6 +34,7 @@ interface GameDashboardProps {
 export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 	const [showScoreEntry, setShowScoreEntry] = useState(false)
 	const [showActionSheet, setShowActionSheet] = useState(false)
+	const [showWinnerCelebration, setShowWinnerCelebration] = useState(false)
 	
 	const { 
 		players, 
@@ -39,6 +45,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 		getWinners,
 		getCurrentPicker,
 		getCurrentDealer,
+		getScoreDifferences,
 		resetGame 
 	} = useGameStore()
 
@@ -47,11 +54,50 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 	const activePlayers = players.filter(p => !p.isEliminated)
 	const currentPicker = getCurrentPicker()
 	const currentDealer = getCurrentDealer()
+	const scoreDifferences = getScoreDifferences()
+
+	// Calculate score difference between winners and next non-winner
+	const getScoreDifferenceFromNextPlayer = () => {
+		if (winners.length === 0) return 0
+		
+		const winnerScore = winners[0].totalScore
+		const nextNonWinner = sortedPlayers.find(player => player.totalScore > winnerScore)
+		
+		return nextNonWinner ? nextNonWinner.totalScore - winnerScore : 0
+	}
+
+	const scoreDifferenceFromNext = getScoreDifferenceFromNextPlayer()
+
+	// Trigger winner celebration when game finishes
+	useEffect(() => {
+		if (gameStatus === 'finished' && winners.length > 0) {
+			// Small delay to let the UI update first
+			setTimeout(() => {
+				setShowWinnerCelebration(true)
+			}, 500)
+		} else {
+			setShowWinnerCelebration(false)
+		}
+	}, [gameStatus, winners.length])
 
 
 	return (
-		<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
-			<div className="max-w-md mx-auto space-y-4">
+		<div className="min-h-screen bg-gray-50 dark:bg-black p-4 relative">
+			{/* Atmospheric Background */}
+			<AnimatedGrid 
+				opacity={0.15}
+				color="#6366f1"
+				spacing={50}
+				dotSize={1.5}
+			/>
+			<AmbientParticles 
+				particleCount={15}
+				speed={0.3}
+				opacity={0.2}
+				color="#8b5cf6"
+			/>
+			
+			<div className="max-w-md mx-auto space-y-4 relative z-10">
 				{/* Header */}
 				<div className="flex items-center justify-between py-4">
 					<Button
@@ -99,13 +145,13 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							</div>
 							{winners.length === 1 ? (
 								<p className="text-yellow-700">
-									🎉 <strong>{winners[0].name}</strong> wins with {winners[0].totalScore} points!
+									🎉 <strong>{winners[0].name}</strong> wins by {scoreDifferenceFromNext} points!
 								</p>
 							) : (
 								<div className="text-yellow-700">
 									<p className="mb-2">🎉 <strong>It&apos;s a tie!</strong></p>
 									<p>
-										Winners: <strong>{winners.map(w => w.name).join(', ')}</strong> with {winners[0].totalScore} points each!
+										Winners: <strong>{winners.map(w => w.name).join(', ')}</strong> by {scoreDifferenceFromNext} points!
 									</p>
 								</div>
 							)}
@@ -116,32 +162,62 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				{/* Action Buttons */}
 				<div className="flex gap-2">
 					{gameStatus === 'playing' && (
-						<Button 
-							onClick={() => setShowScoreEntry(true)}
-							className="flex-1 h-12 text-lg font-semibold"
-							size="lg"
+						<motion.div 
+							className="flex-1"
+							whileTap={{ scale: 0.98 }}
+							transition={{ type: "spring", stiffness: 400, damping: 17 }}
 						>
-							<Plus className="h-5 w-5 mr-2" />
-							Add Round Scores
-						</Button>
+							<RippleEffect
+								onClick={() => setShowScoreEntry(true)}
+								className="w-full rounded-md"
+								color="rgba(255, 255, 255, 0.3)"
+								duration={500}
+							>
+								<Button 
+									className="w-full h-12 text-lg font-semibold pointer-events-none"
+									size="lg"
+								>
+									<motion.div
+										animate={{ rotate: [0, 15, -15, 0] }}
+										transition={{ 
+											duration: 2,
+											repeat: Infinity,
+											repeatType: "reverse",
+											ease: "easeInOut"
+										}}
+									>
+										<Plus className="h-5 w-5 mr-2" />
+									</motion.div>
+									Add Round Scores
+								</Button>
+							</RippleEffect>
+						</motion.div>
 					)}
 					
-					<Button 
-						variant="outline"
-						onClick={onShowHistory}
-						className="h-12 px-4"
+					<motion.div
+						whileTap={{ scale: 0.95 }}
 					>
-						<History className="h-5 w-5" />
-					</Button>
+						<Button 
+							variant="outline"
+							onClick={onShowHistory}
+							className="h-12 px-4"
+						>
+							<History className="h-5 w-5" />
+						</Button>
+					</motion.div>
 					
 					<AlertDialog>
 						<AlertDialogTrigger asChild>
-							<Button 
-								variant="outline"
-								className="h-12 px-4"
+							<motion.div
+								whileTap={{ scale: 0.95 }}
 							>
-								<RotateCcw className="h-5 w-5" />
-							</Button>
+								<Button 
+									variant="outline"
+									className="h-12 px-4"
+								>
+									<RotateCcw className="h-5 w-5" />
+								</Button>
+							</motion.div>
 						</AlertDialogTrigger>
 						<AlertDialogContent>
 							<AlertDialogHeader>
@@ -161,21 +237,55 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				</div>
 
 				{/* Players List */}
-				<div className="space-y-3">
-					{sortedPlayers.map((player, index) => (
-						<PlayerCard
-							key={player.id}
-							player={player}
-							rank={index + 1}
-							eliminationScore={gameSettings.eliminationScore}
-							gameMode={gameSettings.gameMode}
-							gameStatus={gameStatus}
-							isWinner={gameStatus === 'finished' && winners.some(w => w.id === player.id)}
-							isPicker={player.id === currentPicker?.id}
-							isDealer={player.id === currentDealer?.id}
-						/>
-					))}
-				</div>
+				<motion.div 
+					className="space-y-3"
+					initial="hidden"
+					animate="visible"
+					variants={{
+						hidden: { opacity: 0 },
+						visible: {
+							opacity: 1,
+							transition: {
+								staggerChildren: 0.1
+							}
+						}
+					}}
+				>
+					{sortedPlayers.map((player, index) => {
+						const scoreDiff = scoreDifferences.find(sd => sd.playerId === player.id)
+						return (
+							<motion.div
+								key={player.id}
+								variants={{
+									hidden: { opacity: 0, y: 20 },
+									visible: { 
+										opacity: 1, 
+										y: 0,
+										transition: {
+											type: "spring",
+											stiffness: 300,
+											damping: 24
+										}
+									}
+								}}
+							>
+								<PlayerCard
+									player={player}
+									rank={index + 1}
+									eliminationScore={gameSettings.eliminationScore}
+									gameMode={gameSettings.gameMode}
+									gameStatus={gameStatus}
+									gameType={gameSettings.gameType}
+									currentRound={currentRound}
+									isWinner={gameStatus === 'finished' && winners.some(w => w.id === player.id)}
+									isPicker={player.id === currentPicker?.id}
+									isDealer={player.id === currentDealer?.id}
+									scoreDifference={scoreDiff}
+								/>
+							</motion.div>
+						)
+					})}
+				</motion.div>
 
 				{/* Game Stats */}
 				<Card className="bg-card/50 backdrop-blur-sm">
@@ -246,6 +356,13 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				isOpen={showActionSheet}
 				onClose={() => setShowActionSheet(false)}
 				onShowHistory={onShowHistory}
+			/>
+
+			{/* Winner Celebration */}
+			<WinnerCelebration
+				winners={winners}
+				isVisible={showWinnerCelebration}
+				onComplete={() => setShowWinnerCelebration(false)}
 			/>
 		</div>
 	)

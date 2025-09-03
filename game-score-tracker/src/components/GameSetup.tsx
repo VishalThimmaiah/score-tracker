@@ -15,6 +15,7 @@ import {
 	closestCenter,
 	KeyboardSensor,
 	PointerSensor,
+	TouchSensor,
 	useSensor,
 	useSensors,
 	DragEndEvent,
@@ -45,6 +46,7 @@ function SortablePlayerItem({ player, index, onRemove }: SortablePlayerItemProps
 		transform,
 		transition,
 		isDragging,
+		isOver,
 	} = useSortable({ id: player.id })
 
 	const style = {
@@ -56,28 +58,31 @@ function SortablePlayerItem({ player, index, onRemove }: SortablePlayerItemProps
 		<div
 			ref={setNodeRef}
 			style={style}
-			className={`flex items-center justify-between p-3 bg-muted rounded-lg ${
-				isDragging ? 'opacity-50' : ''
+			className={`flex items-center justify-between p-3 bg-muted rounded-lg transition-all duration-200 ${
+				isDragging ? 'opacity-50 scale-105 shadow-lg z-50' : ''
+			} ${
+				isOver ? 'ring-2 ring-primary ring-opacity-50' : ''
 			}`}
 		>
-			<div className="flex items-center gap-3">
+			<div className="flex items-center gap-3 flex-1">
 				<div
 					{...attributes}
 					{...listeners}
-					className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
+					className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-manipulation p-2 -m-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+					style={{ touchAction: 'none' }}
 				>
-					<GripVertical className="h-4 w-4" />
+					<GripVertical className="h-5 w-5" />
 				</div>
 				<div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
 					{index + 1}
 				</div>
-				<span className="font-medium text-foreground">{player.name}</span>
+				<span className="font-medium text-foreground flex-1">{player.name}</span>
 			</div>
 			<Button
 				variant="ghost"
 				size="icon"
 				onClick={onRemove}
-				className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+				className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 min-w-[44px] min-h-[44px]"
 			>
 				<Trash2 className="h-4 w-4" />
 			</Button>
@@ -120,7 +125,17 @@ export default function GameSetup() {
 	}, [players, currentPickerIndex, setCurrentPickerIndex])
 
 	const sensors = useSensors(
-		useSensor(PointerSensor),
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 8, // Require 8px movement before drag starts
+			},
+		}),
+		useSensor(TouchSensor, {
+			activationConstraint: {
+				delay: 200, // 200ms delay before drag starts on touch
+				tolerance: 5, // Allow 5px of movement during delay
+			},
+		}),
 		useSensor(KeyboardSensor, {
 			coordinateGetter: sortableKeyboardCoordinates,
 		})
@@ -233,6 +248,10 @@ export default function GameSetup() {
 						</CardTitle>
 						<CardDescription>
 							Add 2 or more players to start the game. Drag to reorder - first player deals first.
+							<br />
+							<span className="text-xs text-muted-foreground/80">
+								📱 On mobile: Press and hold the grip icon to drag
+							</span>
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
