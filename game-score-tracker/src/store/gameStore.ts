@@ -209,7 +209,7 @@ export const useGameStore = create<GameStore>()(
 			addRoundScores: (scores: { playerId: string; score: number }[]) => {
 				set((state) => {
 					const { players, currentPickerIndex, gameSettings } = state
-					const { gameType, gameMode, eliminationScore, maxRounds } = gameSettings
+					const { gameMode, eliminationScore } = gameSettings
 
 					const updatedPlayers = players.map(player => {
 						const playerScore = scores.find(s => s.playerId === player.id)

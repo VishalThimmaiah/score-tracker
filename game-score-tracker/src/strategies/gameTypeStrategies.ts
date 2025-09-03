@@ -1,4 +1,4 @@
-import { GameSettings, GameType, GameMode } from '@/store/gameStore'
+import { GameSettings, GameType } from '@/store/gameStore'
 
 /**
  * Strategy interface for handling game type specific settings

@@ -6,21 +6,31 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Crown, Skull, CircleDot, Play } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-interface PlayerCardProps {
-	player: Player
-	rank: number
-	eliminationScore: number
+interface GameContext {
 	gameMode: GameMode
-	gameStatus: 'setup' | 'playing' | 'finished'
 	gameType: GameType
+	gameStatus: 'setup' | 'playing' | 'finished'
+	eliminationScore: number
 	currentRound: number
+}
+
+interface PlayerStatus {
 	isWinner?: boolean
 	isDealer?: boolean
 	isPicker?: boolean
+	rank: number
 	scoreDifference?: ScoreDifference
 }
 
-export default function PlayerCard({ player, rank, eliminationScore, gameMode, gameStatus, currentRound, isWinner = false, isDealer = false, isPicker = false, scoreDifference }: PlayerCardProps) {
+interface PlayerCardProps {
+	player: Player
+	gameContext: GameContext
+	playerStatus: PlayerStatus
+}
+
+export default function PlayerCard({ player, gameContext, playerStatus }: PlayerCardProps) {
+	const { gameMode, gameStatus, eliminationScore, currentRound } = gameContext
+	const { rank, isWinner = false, isDealer = false, isPicker = false, scoreDifference } = playerStatus
 
 	// Use theme strategy to get all colors - eliminates all if-else chains
 	const themeStrategy = PLAYER_THEME_STRATEGIES[gameMode]

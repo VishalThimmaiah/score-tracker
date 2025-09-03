@@ -2,16 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useGameStore } from '@/store/gameStore'
-import { canStartGame, getValidationError, validateEliminationScore } from '@/utils/gameValidation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Users, Target, GripVertical, Play, Gamepad2, Clock, Settings } from 'lucide-react'
-import QRCodeWithLogo from './QRCodeWithLogo'
-import { ThemeToggle } from './ThemeToggle'
-import {
+import { 
 	DndContext,
 	closestCenter,
 	KeyboardSensor,
@@ -27,11 +18,28 @@ import {
 	sortableKeyboardCoordinates,
 	verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import {
-	useSortable,
-} from '@dnd-kit/sortable'
+import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Player } from '@/store/gameStore'
+import { 
+	Plus, 
+	Trash2, 
+	Users, 
+	Target, 
+	GripVertical, 
+	Play, 
+	Gamepad2, 
+	Clock, 
+	Settings 
+} from 'lucide-react'
+
+import { useGameStore, Player } from '@/store/gameStore'
+import { canStartGame, getValidationError } from '@/utils/gameValidation'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import QRCodeWithLogo from './QRCodeWithLogo'
+import { ThemeToggle } from './ThemeToggle'
 
 interface SortablePlayerItemProps {
 	player: Player
@@ -55,15 +63,20 @@ function SortablePlayerItem({ player, index, onRemove }: SortablePlayerItemProps
 		transition,
 	}
 
+	// Clean class name composition
+	const getItemClasses = () => {
+		const baseClasses = 'flex items-center justify-between p-3 bg-muted rounded-lg transition-all duration-200'
+		const dragClasses = isDragging ? 'opacity-50 scale-105 shadow-lg z-50' : ''
+		const overClasses = isOver ? 'ring-2 ring-primary ring-opacity-50' : ''
+		
+		return [baseClasses, dragClasses, overClasses].filter(Boolean).join(' ')
+	}
+
 	return (
 		<div
 			ref={setNodeRef}
 			style={style}
-			className={`flex items-center justify-between p-3 bg-muted rounded-lg transition-all duration-200 ${
-				isDragging ? 'opacity-50 scale-105 shadow-lg z-50' : ''
-			} ${
-				isOver ? 'ring-2 ring-primary ring-opacity-50' : ''
-			}`}
+			className={getItemClasses()}
 		>
 			<div className="flex items-center gap-3 flex-1">
 				<div
@@ -179,16 +192,9 @@ export default function GameSetup() {
 		}
 	}
 
-	const isValidEliminationScore = () => {
-		const eliminationScore = eliminationScoreRef.current?.value
-		const result = validateEliminationScore(gameSettings, eliminationScore || String(gameSettings.eliminationScore))
-		return result.isValid
-	}
-
 	const isValidGameSettings = () => {
 		const eliminationScore = eliminationScoreRef.current?.value
-		const result = canStartGame(gameSettings, players.length, eliminationScore)
-		return result
+		return canStartGame(gameSettings, players.length, eliminationScore)
 	}
 
 	const handleDragEnd = (event: DragEndEvent) => {
@@ -235,7 +241,7 @@ export default function GameSetup() {
 							Add 2 or more players to start the game. Drag to reorder - first player deals first.
 							<br />
 							<span className="text-xs text-muted-foreground/80">
-								📱 On mobile: Press and hold the grip icon to drag
+								Press and hold the grip icon to drag
 							</span>
 						</CardDescription>
 					</CardHeader>
@@ -278,11 +284,11 @@ export default function GameSetup() {
 							</DndContext>
 						)}
 
-						{/* Validation Messages */}
-						{players.length < 2 && (
-							<p className="text-sm text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/20 p-2 rounded">
-								Add at least 2 players to start the game
-							</p>
+						{/* Game Settings Validation */}
+						{!isValidGameSettings() && (
+							<div className="text-sm text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/20 p-2 rounded">
+								<p>{getValidationError(gameSettings, players.length, eliminationScoreRef.current?.value)}</p>
+							</div>
 						)}
 					</CardContent>
 				</Card>
@@ -486,13 +492,6 @@ export default function GameSetup() {
 							</div>
 						</CardContent>
 					</Card>
-				)}
-
-				{/* Game Settings Validation */}
-				{!isValidGameSettings() && (
-					<div className="text-sm text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20 p-2 rounded">
-						<p>{getValidationError(gameSettings, players.length, eliminationScoreRef.current?.value)}</p>
-					</div>
 				)}
 
 				{/* Start Game Button */}
