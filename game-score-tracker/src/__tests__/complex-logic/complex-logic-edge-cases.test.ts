@@ -383,7 +383,6 @@ describe('Complex Logic Edge Cases', () => {
 
 			// Get fresh state after setup
 			store = useGameStore.getState()
-			const initialPickerIndex = store.currentPickerIndex
 
 			// Action: Eliminate all players
 			store.addRoundScores([

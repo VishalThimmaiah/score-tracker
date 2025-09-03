@@ -411,7 +411,7 @@ export const useGameStore = create<GameStore>()(
 		{
 			name: 'game-score-tracker-storage',
 			version: 2,
-			migrate: (persistedState: any, version: number) => {
+			migrate: (persistedState: unknown, version: number) => {
 				// Handle migration from version 1 to version 2
 				if (version < 2) {
 					// Add any missing fields that were added in version 2
@@ -438,7 +438,7 @@ export const useGameStore = create<GameStore>()(
 
 					// Ensure all players have required fields
 					if (state.players) {
-						state.players = state.players.map((player: any) => ({
+						state.players = state.players.map((player: Partial<Player>) => ({
 							id: player.id || Date.now().toString(),
 							name: player.name || 'Unknown Player',
 							scores: player.scores || [],

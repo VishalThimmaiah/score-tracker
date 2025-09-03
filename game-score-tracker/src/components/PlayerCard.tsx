@@ -18,7 +18,7 @@ interface PlayerCardProps {
 	scoreDifference?: ScoreDifference
 }
 
-export default function PlayerCard({ player, rank, eliminationScore, gameMode, gameStatus, gameType: _, currentRound, isWinner = false, isDealer = false, isPicker = false, scoreDifference }: PlayerCardProps) {
+export default function PlayerCard({ player, rank, eliminationScore, gameMode, gameStatus, currentRound, isWinner = false, isDealer = false, isPicker = false, scoreDifference }: PlayerCardProps) {
 
 	// Calculate score percentage for color coding
 	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
