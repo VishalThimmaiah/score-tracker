@@ -16,8 +16,11 @@ export interface GameSettings {
 	gameType: GameType
 	gameMode: GameMode
 	eliminationScore: number
-	lastEliminationScore: number
 	maxRounds?: number
+	// Custom mode preferences - preserved independently
+	customEliminationScore: number
+	customMaxRounds: number
+	customGameMode: GameMode
 }
 
 export interface GameState {
@@ -49,7 +52,7 @@ interface GameActions {
 	// Utility actions
 	getPlayerById: (id: string) => Player | undefined
 	getSortedPlayers: () => Player[]
-	getWinner: () => Player | undefined
+	getWinners: () => Player[]
 	calculateDealerIndex: (pickerIndex: number) => number
 	getCurrentPicker: () => Player | undefined
 	getCurrentDealer: () => Player | undefined
@@ -63,7 +66,10 @@ const initialState: GameState = {
 		gameType: '5-cards',
 		gameMode: 'points-based',
 		eliminationScore: 100,
-		lastEliminationScore: 100
+		// Custom mode defaults
+		customEliminationScore: 100,
+		customMaxRounds: 7,
+		customGameMode: 'points-based'
 	},
 	gameStatus: 'setup',
 	currentRound: 0,
@@ -121,29 +127,51 @@ export const useGameStore = create<GameStore>()(
 					gameSettings: {
 						...state.gameSettings,
 						eliminationScore: score,
-						lastEliminationScore: score
+						// Also update custom preference if in custom mode
+						customEliminationScore: state.gameSettings.gameType === 'custom' ? score : state.gameSettings.customEliminationScore
 					}
 				}))
 			},
 
 			setGameType: (gameType: GameType) => {
-				set((state) => ({
-					gameSettings: {
-						...state.gameSettings,
-						gameType,
-						// Set default game mode based on game type
-						gameMode: gameType === 'secret-7' ? 'rounds-based' : 'points-based',
-						// Set default max rounds for Secret 7
-						maxRounds: gameType === 'secret-7' ? 7 : state.gameSettings.maxRounds
+				set((state) => {
+					const currentSettings = state.gameSettings
+					const newSettings = { ...currentSettings, gameType }
+
+					// Save current custom settings if switching FROM custom
+					if (currentSettings.gameType === 'custom') {
+						newSettings.customEliminationScore = currentSettings.eliminationScore
+						newSettings.customMaxRounds = currentSettings.maxRounds || 7
+						newSettings.customGameMode = currentSettings.gameMode
 					}
-				}))
+
+					// Apply game type specific settings
+					if (gameType === '5-cards') {
+						newSettings.gameMode = 'points-based'
+						newSettings.eliminationScore = 100
+						newSettings.maxRounds = undefined
+					} else if (gameType === 'secret-7') {
+						newSettings.gameMode = 'rounds-based'
+						newSettings.maxRounds = 7
+						newSettings.eliminationScore = currentSettings.eliminationScore
+					} else if (gameType === 'custom') {
+						// Restore custom preferences
+						newSettings.gameMode = currentSettings.customGameMode
+						newSettings.eliminationScore = currentSettings.customEliminationScore
+						newSettings.maxRounds = currentSettings.customMaxRounds
+					}
+
+					return { gameSettings: newSettings }
+				})
 			},
 
 			setGameMode: (gameMode: GameMode) => {
 				set((state) => ({
 					gameSettings: {
 						...state.gameSettings,
-						gameMode
+						gameMode,
+						// Also update custom preference if in custom mode
+						customGameMode: state.gameSettings.gameType === 'custom' ? gameMode : state.gameSettings.customGameMode
 					}
 				}))
 			},
@@ -152,7 +180,9 @@ export const useGameStore = create<GameStore>()(
 				set((state) => ({
 					gameSettings: {
 						...state.gameSettings,
-						maxRounds: rounds
+						maxRounds: rounds,
+						// Also update custom preference if in custom mode
+						customMaxRounds: state.gameSettings.gameType === 'custom' ? rounds : state.gameSettings.customMaxRounds
 					}
 				}))
 			},
@@ -277,9 +307,9 @@ export const useGameStore = create<GameStore>()(
 				})
 			},
 
-			getWinner: () => {
+			getWinners: () => {
 				const { players, gameStatus, gameSettings } = get()
-				if (gameStatus !== 'finished') return undefined
+				if (gameStatus !== 'finished') return []
 
 				const { gameMode } = gameSettings
 
@@ -287,17 +317,15 @@ export const useGameStore = create<GameStore>()(
 					// Points-based: Winner is last active player, or lowest score if all eliminated
 					const activePlayers = players.filter(p => !p.isEliminated)
 					if (activePlayers.length === 1) {
-						return activePlayers[0]
+						return activePlayers
 					}
-					// If all players are eliminated, winner is the one with lowest score
-					return players.reduce((winner, player) =>
-						player.totalScore < winner.totalScore ? player : winner
-					)
+					// If all players are eliminated, find all players with lowest score
+					const lowestScore = Math.min(...players.map(p => p.totalScore))
+					return players.filter(p => p.totalScore === lowestScore)
 				} else {
-					// Rounds-based: Winner is always the player with lowest total score
-					return players.reduce((winner, player) =>
-						player.totalScore < winner.totalScore ? player : winner
-					)
+					// Rounds-based: Find all players with lowest total score
+					const lowestScore = Math.min(...players.map(p => p.totalScore))
+					return players.filter(p => p.totalScore === lowestScore)
 				}
 			},
 
@@ -329,7 +357,7 @@ export const useGameStore = create<GameStore>()(
 		}),
 		{
 			name: 'game-score-tracker-storage',
-			version: 1
+			version: 2
 		}
 	)
 )
