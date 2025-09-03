@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useGameStore, GameType, GameMode } from '@/store/gameStore'
+import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -139,7 +139,7 @@ export default function GameSetup() {
 	const handleStartGame = () => {
 		if (players.length >= 2) {
 			const eliminationScore = eliminationScoreRef.current?.value
-			const scoreValue = (eliminationScore ? Number(eliminationScore) : gameSettings.lastEliminationScore) || 100
+			const scoreValue = (eliminationScore ? Number(eliminationScore) : gameSettings.eliminationScore) || 100
 			
 			// Prevent starting game if elimination score is 0
 			if (scoreValue <= 0) {
@@ -172,7 +172,7 @@ export default function GameSetup() {
 		}
 		
 		const eliminationScore = eliminationScoreRef.current?.value
-		const scoreValue = eliminationScore ? Number(eliminationScore) : gameSettings.lastEliminationScore
+		const scoreValue = eliminationScore ? Number(eliminationScore) : gameSettings.eliminationScore
 		return scoreValue > 0
 	}
 
@@ -313,7 +313,7 @@ export default function GameSetup() {
 											<span className="font-medium text-foreground">5 Cards</span>
 										</div>
 										<p className="text-sm text-muted-foreground">
-											Points-based elimination • Players eliminated at score limit
+											Points-based elimination • Fixed at 100 points
 										</p>
 									</div>
 								</label>
@@ -406,15 +406,15 @@ export default function GameSetup() {
 								</div>
 							)}
 
-							{/* Elimination Score - Only show for points-based games */}
-							{gameSettings.gameMode === 'points-based' && (
+							{/* Elimination Score - Only show for points-based games and not 5 Cards */}
+							{gameSettings.gameMode === 'points-based' && gameSettings.gameType !== '5-cards' && (
 								<div className="space-y-3 pt-2 border-t">
 									<Label htmlFor="elimination-score" className="text-sm font-medium">Elimination Score</Label>
 									<Input
 										id="elimination-score"
 										ref={eliminationScoreRef}
 										type="number"
-										defaultValue={gameSettings.lastEliminationScore}
+										defaultValue={gameSettings.eliminationScore}
 										min={1}
 										step={10}
 										className="mt-1"
@@ -428,7 +428,7 @@ export default function GameSetup() {
 							{/* Game Type Info */}
 							<div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
 								{gameSettings.gameType === '5-cards' && (
-									<p>Classic elimination game • Configure elimination score above</p>
+									<p>Classic elimination game • Fixed at 100 points elimination</p>
 								)}
 								{gameSettings.gameType === 'secret-7' && (
 									<p>Exactly 7 rounds • All players stay active • Winner has lowest total</p>

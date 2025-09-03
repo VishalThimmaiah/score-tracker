@@ -36,14 +36,14 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 		gameStatus, 
 		currentRound,
 		getSortedPlayers, 
-		getWinner,
+		getWinners,
 		getCurrentPicker,
 		getCurrentDealer,
 		resetGame 
 	} = useGameStore()
 
 	const sortedPlayers = getSortedPlayers()
-	const winner = getWinner()
+	const winners = getWinners()
 	const activePlayers = players.filter(p => !p.isEliminated)
 	const currentPicker = getCurrentPicker()
 	const currentDealer = getCurrentDealer()
@@ -90,16 +90,25 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				</div>
 
 				{/* Game Status */}
-				{gameStatus === 'finished' && winner && (
+				{gameStatus === 'finished' && winners.length > 0 && (
 					<Card className="bg-gradient-to-r from-yellow-100 to-yellow-200 border-yellow-300">
 						<CardContent className="p-4 text-center">
 							<div className="flex items-center justify-center gap-2 text-yellow-800 mb-2">
 								<Trophy className="h-6 w-6" />
 								<span className="text-lg font-bold">Game Over!</span>
 							</div>
-							<p className="text-yellow-700">
-								🎉 <strong>{winner.name}</strong> wins with {winner.totalScore} points!
-							</p>
+							{winners.length === 1 ? (
+								<p className="text-yellow-700">
+									🎉 <strong>{winners[0].name}</strong> wins with {winners[0].totalScore} points!
+								</p>
+							) : (
+								<div className="text-yellow-700">
+									<p className="mb-2">🎉 <strong>It&apos;s a tie!</strong></p>
+									<p>
+										Winners: <strong>{winners.map(w => w.name).join(', ')}</strong> with {winners[0].totalScore} points each!
+									</p>
+								</div>
+							)}
 						</CardContent>
 					</Card>
 				)}
@@ -161,7 +170,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							eliminationScore={gameSettings.eliminationScore}
 							gameMode={gameSettings.gameMode}
 							gameStatus={gameStatus}
-							isWinner={gameStatus === 'finished' && winner?.id === player.id}
+							isWinner={gameStatus === 'finished' && winners.some(w => w.id === player.id)}
 							isPicker={player.id === currentPicker?.id}
 							isDealer={player.id === currentDealer?.id}
 						/>
