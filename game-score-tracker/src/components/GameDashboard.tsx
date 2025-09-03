@@ -56,6 +56,18 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 	const currentDealer = getCurrentDealer()
 	const scoreDifferences = getScoreDifferences()
 
+	// Calculate score difference between winners and next non-winner
+	const getScoreDifferenceFromNextPlayer = () => {
+		if (winners.length === 0) return 0
+		
+		const winnerScore = winners[0].totalScore
+		const nextNonWinner = sortedPlayers.find(player => player.totalScore > winnerScore)
+		
+		return nextNonWinner ? nextNonWinner.totalScore - winnerScore : 0
+	}
+
+	const scoreDifferenceFromNext = getScoreDifferenceFromNextPlayer()
+
 	// Trigger winner celebration when game finishes
 	useEffect(() => {
 		if (gameStatus === 'finished' && winners.length > 0) {
@@ -133,13 +145,13 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							</div>
 							{winners.length === 1 ? (
 								<p className="text-yellow-700">
-									🎉 <strong>{winners[0].name}</strong> wins with {winners[0].totalScore} points!
+									🎉 <strong>{winners[0].name}</strong> wins by {scoreDifferenceFromNext} points!
 								</p>
 							) : (
 								<div className="text-yellow-700">
 									<p className="mb-2">🎉 <strong>It&apos;s a tie!</strong></p>
 									<p>
-										Winners: <strong>{winners.map(w => w.name).join(', ')}</strong> with {winners[0].totalScore} points each!
+										Winners: <strong>{winners.map(w => w.name).join(', ')}</strong> by {scoreDifferenceFromNext} points!
 									</p>
 								</div>
 							)}
