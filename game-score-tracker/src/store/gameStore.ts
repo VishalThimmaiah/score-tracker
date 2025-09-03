@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { GAME_TYPE_STRATEGIES } from '@/strategies/gameTypeStrategies'
 import { WINNER_CALCULATORS } from '@/strategies/winnerCalculators'
+import { gameStateMachine } from '@/strategies/gameStateMachine'
 
 export interface Player {
 	id: string
@@ -187,10 +188,17 @@ export const useGameStore = create<GameStore>()(
 			},
 
 			startGame: () => {
-				const { players } = get()
-				if (players.length >= 2) {
+				const state = get()
+				const context = {
+					players: state.players,
+					gameSettings: state.gameSettings,
+					currentRound: state.currentRound
+				}
+
+				const newStatus = gameStateMachine.startGame(context)
+				if (newStatus === 'playing') {
 					set({
-						gameStatus: 'playing',
+						gameStatus: newStatus,
 						currentRound: 1
 						// Don't reset currentPickerIndex - preserve user's selection
 					})
@@ -240,18 +248,13 @@ export const useGameStore = create<GameStore>()(
 					const nextPickerIndex = findNextActivePicker(currentPickerIndex, updatedPlayers)
 					const newRound = state.currentRound + 1
 
-					// Determine game status based on game type and mode
-					let gameStatus: 'setup' | 'playing' | 'finished' = 'playing'
-
-					if (gameMode === 'points-based') {
-						// Points-based: End when only one player left or all eliminated
-						const currentActivePlayers = updatedPlayers.filter(p => !p.isEliminated)
-						gameStatus = currentActivePlayers.length <= 1 ? 'finished' : 'playing'
-					} else if (gameMode === 'rounds-based') {
-						// Rounds-based: End when max rounds reached
-						const targetRounds = gameType === 'secret-7' ? 7 : (maxRounds || 7)
-						gameStatus = newRound > targetRounds ? 'finished' : 'playing'
+					// Use state machine to determine next game status
+					const context = {
+						players: updatedPlayers,
+						gameSettings: gameSettings,
+						currentRound: newRound
 					}
+					const gameStatus = gameStateMachine.getNextStateAfterRound(context)
 
 					return {
 						players: updatedPlayers,
@@ -267,12 +270,17 @@ export const useGameStore = create<GameStore>()(
 			},
 
 			resetGame: () => {
-				set(initialState)
+				const newStatus = gameStateMachine.resetGame()
+				set({
+					...initialState,
+					gameStatus: newStatus
+				})
 			},
 
 			pauseGame: () => {
+				const newStatus = gameStateMachine.pauseGame()
 				set(() => ({
-					gameStatus: 'setup'
+					gameStatus: newStatus
 				}))
 			},
 

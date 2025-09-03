@@ -1,6 +1,7 @@
 'use client'
 
 import { Player, GameMode, GameType, ScoreDifference } from '@/store/gameStore'
+import { PLAYER_THEME_STRATEGIES } from '@/strategies/playerThemeStrategies'
 import { Card, CardContent } from '@/components/ui/card'
 import { Crown, Skull, CircleDot, Play } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -21,90 +22,12 @@ interface PlayerCardProps {
 
 export default function PlayerCard({ player, rank, eliminationScore, gameMode, gameStatus, currentRound, isWinner = false, isDealer = false, isPicker = false, scoreDifference }: PlayerCardProps) {
 
-	// Calculate score percentage for color coding
+	// Use theme strategy to get all colors - eliminates all if-else chains
+	const themeStrategy = PLAYER_THEME_STRATEGIES[gameMode]
+	const theme = themeStrategy.getTheme(player, eliminationScore, scoreDifference)
+
+	// Calculate score percentage for progress bar display
 	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
-	
-	// Determine background color based on game mode
-	const getBackgroundColor = () => {
-		if (player.isEliminated) {
-			return 'bg-gray-800 dark:bg-gray-700 text-white border-gray-700 dark:border-gray-600'
-		}
-		
-		if (gameMode === 'points-based') {
-			// Points-based: Use score percentage logic
-			if (scorePercentage < 25) {
-				return 'bg-green-100 dark:bg-green-800/60 text-green-900 dark:text-green-200 border-green-300 dark:border-green-600'
-			} else if (scorePercentage < 50) {
-				return 'bg-yellow-100 dark:bg-yellow-800/60 text-yellow-900 dark:text-yellow-200 border-yellow-300 dark:border-yellow-600'
-			} else if (scorePercentage < 75) {
-				return 'bg-orange-100 dark:bg-orange-800/60 text-orange-900 dark:text-orange-200 border-orange-300 dark:border-orange-600'
-			} else {
-				return 'bg-red-100 dark:bg-red-800/60 text-red-900 dark:text-red-200 border-red-300 dark:border-red-600'
-			}
-		} else {
-			// Rounds-based: Green only for potential winners (lowest score), default for others
-			if (scoreDifference?.isLeader) {
-				return 'bg-green-100 dark:bg-green-800/60 text-green-900 dark:text-green-200 border-green-300 dark:border-green-600'
-			} else {
-				return 'bg-gray-100 dark:bg-gray-800/60 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600'
-			}
-		}
-	}
-
-	// Get progress bar color
-	const getProgressColor = () => {
-		if (player.isEliminated) return 'bg-gray-600 dark:bg-gray-500'
-		if (scorePercentage < 25) return 'bg-green-500 dark:bg-green-400'
-		if (scorePercentage < 50) return 'bg-yellow-500 dark:bg-yellow-400'
-		if (scorePercentage < 75) return 'bg-orange-500 dark:bg-orange-400'
-		return 'bg-red-500 dark:bg-red-400'
-	}
-
-	// Get dealer badge color that matches the theme
-	const getDealerBadgeColor = () => {
-		if (player.isEliminated) {
-			return 'bg-gray-600 dark:bg-gray-500 text-white'
-		}
-		
-		if (gameMode === 'points-based') {
-			// Points-based: Use score percentage logic
-			if (scorePercentage < 25) {
-				return 'bg-green-600 dark:bg-green-500 text-white'
-			} else if (scorePercentage < 50) {
-				return 'bg-yellow-600 dark:bg-yellow-500 text-white'
-			} else if (scorePercentage < 75) {
-				return 'bg-orange-600 dark:bg-orange-500 text-white'
-			} else {
-				return 'bg-red-600 dark:bg-red-500 text-white'
-			}
-		} else {
-			// Rounds-based: Option 3 - Indigo for Dealer
-			return 'bg-indigo-600 dark:bg-indigo-500 text-white'
-		}
-	}
-
-	// Get picker badge color (different from dealer)
-	const getPickerBadgeColor = () => {
-		if (player.isEliminated) {
-			return 'bg-gray-700 dark:bg-gray-600 text-white'
-		}
-		
-		if (gameMode === 'points-based') {
-			// Points-based: Use score percentage logic
-			if (scorePercentage < 25) {
-				return 'bg-purple-600 dark:bg-purple-500 text-white'
-			} else if (scorePercentage < 50) {
-				return 'bg-indigo-600 dark:bg-indigo-500 text-white'
-			} else if (scorePercentage < 75) {
-				return 'bg-blue-600 dark:bg-blue-500 text-white'
-			} else {
-				return 'bg-violet-600 dark:bg-violet-500 text-white'
-			}
-		} else {
-			// Rounds-based: Option 3 - Rose for Picker (avoiding green conflict)
-			return 'bg-rose-600 dark:bg-rose-500 text-white'
-		}
-	}
 
 	return (
 		<motion.div
@@ -127,7 +50,7 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 				}
 			}}
 		>
-			<Card className={`py-0 ${getBackgroundColor()} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''} 
+			<Card className={`py-0 ${theme.background} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''} 
 				relative overflow-hidden
 				before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent 
 				before:translate-x-[-100%] before:animate-pulse`}>
@@ -151,13 +74,13 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 								<h3 className="font-semibold text-lg">{player.name}</h3>
 								<div className="flex items-center gap-1">
 									{gameStatus !== 'finished' && isPicker && (
-										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getPickerBadgeColor()}`}>
+										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${theme.pickerBadge}`}>
 											<Play className="h-3 w-3" />
 											<span>Picker</span>
 										</div>
 									)}
 									{gameStatus !== 'finished' && isDealer && (
-										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getDealerBadgeColor()}`}>
+										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${theme.dealerBadge}`}>
 											<CircleDot className="h-3 w-3" />
 											<span>Dealer</span>
 										</div>
@@ -202,7 +125,7 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 						</div>
 						<div className="w-full bg-white/30 rounded-full h-2">
 							<div 
-								className={`h-2 rounded-full transition-all duration-500 ${getProgressColor()}`}
+								className={`h-2 rounded-full transition-all duration-500 ${theme.progress}`}
 								style={{ width: `${Math.min(scorePercentage, 100)}%` }}
 							/>
 						</div>
