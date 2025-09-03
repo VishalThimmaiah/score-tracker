@@ -17,7 +17,7 @@
 		{
 			"src": "/logo.png",
 			"sizes": "126x122",
-			"type": "image/png",
+			"type": "image/jpeg",
 			"purpose": "any maskable"
 		},
 		{
@@ -31,14 +31,6 @@
 			"sizes": "512x512",
 			"type": "image/png",
 			"purpose": "any maskable"
-		}
-	],
-	"screenshots": [
-		{
-			"src": "/screenshot-mobile.png",
-			"sizes": "390x844",
-			"type": "image/png",
-			"form_factor": "narrow"
 		}
 	],
 	"shortcuts": [

@@ -1,6 +1,6 @@
 'use client'
 
-import { Player, GameMode } from '@/store/gameStore'
+import { Player, GameMode, GameType, ScoreDifference } from '@/store/gameStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Crown, Skull, CircleDot, Play } from 'lucide-react'
 
@@ -10,12 +10,16 @@ interface PlayerCardProps {
 	eliminationScore: number
 	gameMode: GameMode
 	gameStatus: 'setup' | 'playing' | 'finished'
+	gameType: GameType
+	currentRound: number
 	isWinner?: boolean
 	isDealer?: boolean
 	isPicker?: boolean
+	scoreDifference?: ScoreDifference
 }
 
-export default function PlayerCard({ player, rank, eliminationScore, gameMode, gameStatus, isWinner = false, isDealer = false, isPicker = false }: PlayerCardProps) {
+export default function PlayerCard({ player, rank, eliminationScore, gameMode, gameStatus, gameType: _, currentRound, isWinner = false, isDealer = false, isPicker = false, scoreDifference }: PlayerCardProps) {
+
 	// Calculate score percentage for color coding
 	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
 	
@@ -37,13 +41,9 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 				return 'bg-red-100 dark:bg-red-800/60 text-red-900 dark:text-red-200 border-red-300 dark:border-red-600'
 			}
 		} else {
-			// Rounds-based: Use rank-based logic
-			if (rank === 1) {
+			// Rounds-based: Green only for potential winners (lowest score), default for others
+			if (scoreDifference?.isLeader) {
 				return 'bg-green-100 dark:bg-green-800/60 text-green-900 dark:text-green-200 border-green-300 dark:border-green-600'
-			} else if (rank === 2) {
-				return 'bg-yellow-100 dark:bg-yellow-800/60 text-yellow-900 dark:text-yellow-200 border-yellow-300 dark:border-yellow-600'
-			} else if (rank === 3) {
-				return 'bg-orange-100 dark:bg-orange-800/60 text-orange-900 dark:text-orange-200 border-orange-300 dark:border-orange-600'
 			} else {
 				return 'bg-gray-100 dark:bg-gray-800/60 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600'
 			}
@@ -77,16 +77,8 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 				return 'bg-red-600 dark:bg-red-500 text-white'
 			}
 		} else {
-			// Rounds-based: Use rank-based logic
-			if (rank === 1) {
-				return 'bg-green-600 dark:bg-green-500 text-white'
-			} else if (rank === 2) {
-				return 'bg-yellow-600 dark:bg-yellow-500 text-white'
-			} else if (rank === 3) {
-				return 'bg-orange-600 dark:bg-orange-500 text-white'
-			} else {
-				return 'bg-gray-600 dark:bg-gray-500 text-white'
-			}
+			// Rounds-based: Option 3 - Indigo for Dealer
+			return 'bg-indigo-600 dark:bg-indigo-500 text-white'
 		}
 	}
 
@@ -108,16 +100,8 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 				return 'bg-violet-600 dark:bg-violet-500 text-white'
 			}
 		} else {
-			// Rounds-based: Use rank-based logic with different colors from dealer
-			if (rank === 1) {
-				return 'bg-purple-600 dark:bg-purple-500 text-white'
-			} else if (rank === 2) {
-				return 'bg-indigo-600 dark:bg-indigo-500 text-white'
-			} else if (rank === 3) {
-				return 'bg-blue-600 dark:bg-blue-500 text-white'
-			} else {
-				return 'bg-gray-700 dark:bg-gray-600 text-white'
-			}
+			// Rounds-based: Option 3 - Rose for Picker (avoiding green conflict)
+			return 'bg-rose-600 dark:bg-rose-500 text-white'
 		}
 	}
 
@@ -160,6 +144,17 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 								<div className="flex items-center gap-1 text-sm opacity-75">
 									<Skull className="h-3 w-3" />
 									<span>Eliminated</span>
+								</div>
+							)}
+							
+							{/* Score Difference Display */}
+							{currentRound > 1 && scoreDifference && !player.isEliminated && (
+								<div className="text-sm opacity-75 mt-1">
+									{scoreDifference.isLeader ? (
+										scoreDifference.hasMultipleLeaders ? 'Tied for lead' : 'Leading'
+									) : (
+										`+${scoreDifference.difference} behind leader`
+									)}
 								</div>
 							)}
 						</div>

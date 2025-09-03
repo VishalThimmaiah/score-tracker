@@ -39,6 +39,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 		getWinners,
 		getCurrentPicker,
 		getCurrentDealer,
+		getScoreDifferences,
 		resetGame 
 	} = useGameStore()
 
@@ -47,6 +48,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 	const activePlayers = players.filter(p => !p.isEliminated)
 	const currentPicker = getCurrentPicker()
 	const currentDealer = getCurrentDealer()
+	const scoreDifferences = getScoreDifferences()
 
 
 	return (
@@ -162,19 +164,25 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 
 				{/* Players List */}
 				<div className="space-y-3">
-					{sortedPlayers.map((player, index) => (
-						<PlayerCard
-							key={player.id}
-							player={player}
-							rank={index + 1}
-							eliminationScore={gameSettings.eliminationScore}
-							gameMode={gameSettings.gameMode}
-							gameStatus={gameStatus}
-							isWinner={gameStatus === 'finished' && winners.some(w => w.id === player.id)}
-							isPicker={player.id === currentPicker?.id}
-							isDealer={player.id === currentDealer?.id}
-						/>
-					))}
+					{sortedPlayers.map((player, index) => {
+						const scoreDiff = scoreDifferences.find(sd => sd.playerId === player.id)
+						return (
+							<PlayerCard
+								key={player.id}
+								player={player}
+								rank={index + 1}
+								eliminationScore={gameSettings.eliminationScore}
+								gameMode={gameSettings.gameMode}
+								gameStatus={gameStatus}
+								gameType={gameSettings.gameType}
+								currentRound={currentRound}
+								isWinner={gameStatus === 'finished' && winners.some(w => w.id === player.id)}
+								isPicker={player.id === currentPicker?.id}
+								isDealer={player.id === currentDealer?.id}
+								scoreDifference={scoreDiff}
+							/>
+						)
+					})}
 				</div>
 
 				{/* Game Stats */}

@@ -9,6 +9,13 @@ export interface Player {
 	isEliminated: boolean
 }
 
+export interface ScoreDifference {
+	playerId: string
+	difference: number
+	isLeader: boolean
+	hasMultipleLeaders: boolean
+}
+
 export type GameType = '5-cards' | 'secret-7' | 'custom'
 export type GameMode = 'points-based' | 'rounds-based'
 
@@ -56,6 +63,7 @@ interface GameActions {
 	calculateDealerIndex: (pickerIndex: number) => number
 	getCurrentPicker: () => Player | undefined
 	getCurrentDealer: () => Player | undefined
+	getScoreDifferences: () => ScoreDifference[]
 }
 
 type GameStore = GameState & GameActions
@@ -353,11 +361,95 @@ export const useGameStore = create<GameStore>()(
 				const { players, currentPickerIndex } = get()
 				const dealerIndex = get().calculateDealerIndex(currentPickerIndex)
 				return players[dealerIndex]
+			},
+
+			getScoreDifferences: () => {
+				const { players, gameSettings } = get()
+
+				// Return empty array if no players
+				if (players.length === 0) {
+					return []
+				}
+
+				// For points-based games, only consider active (non-eliminated) players
+				const relevantPlayers = gameSettings.gameMode === 'points-based'
+					? players.filter(p => !p.isEliminated)
+					: players
+
+				// Return empty array if no relevant players
+				if (relevantPlayers.length === 0) {
+					return []
+				}
+
+				// Find the minimum score among relevant players
+				const minScore = Math.min(...relevantPlayers.map(p => p.totalScore))
+
+				// Count how many players have the minimum score
+				const leadersCount = relevantPlayers.filter(p => p.totalScore === minScore).length
+
+				// Calculate differences for each player
+				return players.map(player => {
+					// For eliminated players in points-based games, don't show score differences
+					if (gameSettings.gameMode === 'points-based' && player.isEliminated) {
+						return {
+							playerId: player.id,
+							difference: 0,
+							isLeader: false,
+							hasMultipleLeaders: false
+						}
+					}
+
+					return {
+						playerId: player.id,
+						difference: player.totalScore - minScore,
+						isLeader: player.totalScore === minScore,
+						hasMultipleLeaders: leadersCount > 1
+					}
+				})
 			}
 		}),
 		{
 			name: 'game-score-tracker-storage',
-			version: 2
+			version: 2,
+			migrate: (persistedState: any, version: number) => {
+				// Handle migration from version 1 to version 2
+				if (version < 2) {
+					// Add any missing fields that were added in version 2
+					const state = persistedState as Partial<GameState>
+
+					// Ensure gameSettings has all required fields
+					if (state.gameSettings) {
+						state.gameSettings = {
+							gameType: state.gameSettings.gameType || '5-cards',
+							gameMode: state.gameSettings.gameMode || 'points-based',
+							eliminationScore: state.gameSettings.eliminationScore || 100,
+							maxRounds: state.gameSettings.maxRounds,
+							// Add new custom fields with defaults
+							customEliminationScore: state.gameSettings.eliminationScore || 100,
+							customMaxRounds: 7,
+							customGameMode: state.gameSettings.gameMode || 'points-based'
+						}
+					}
+
+					// Ensure currentPickerIndex exists
+					if (typeof state.currentPickerIndex !== 'number') {
+						state.currentPickerIndex = 0
+					}
+
+					// Ensure all players have required fields
+					if (state.players) {
+						state.players = state.players.map((player: any) => ({
+							id: player.id || Date.now().toString(),
+							name: player.name || 'Unknown Player',
+							scores: player.scores || [],
+							totalScore: player.totalScore || 0,
+							isEliminated: player.isEliminated || false
+						}))
+					}
+				}
+
+				return persistedState
+			}
 		}
 	)
 )
