@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ import {
 import PlayerCard from './PlayerCard'
 import ScoreEntrySheet from './ScoreEntrySheet'
 import ActionSheet from './ActionSheet'
+import WinnerCelebration from './WinnerCelebration'
 import { ThemeToggle } from './ThemeToggle'
 import { Plus, RotateCcw, Trophy, History, Menu, CircleDot, Play } from 'lucide-react'
 
@@ -29,6 +30,7 @@ interface GameDashboardProps {
 export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 	const [showScoreEntry, setShowScoreEntry] = useState(false)
 	const [showActionSheet, setShowActionSheet] = useState(false)
+	const [showWinnerCelebration, setShowWinnerCelebration] = useState(false)
 	
 	const { 
 		players, 
@@ -49,6 +51,18 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 	const currentPicker = getCurrentPicker()
 	const currentDealer = getCurrentDealer()
 	const scoreDifferences = getScoreDifferences()
+
+	// Trigger winner celebration when game finishes
+	useEffect(() => {
+		if (gameStatus === 'finished' && winners.length > 0) {
+			// Small delay to let the UI update first
+			setTimeout(() => {
+				setShowWinnerCelebration(true)
+			}, 500)
+		} else {
+			setShowWinnerCelebration(false)
+		}
+	}, [gameStatus, winners.length])
 
 
 	return (
@@ -254,6 +268,13 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				isOpen={showActionSheet}
 				onClose={() => setShowActionSheet(false)}
 				onShowHistory={onShowHistory}
+			/>
+
+			{/* Winner Celebration */}
+			<WinnerCelebration
+				winners={winners}
+				isVisible={showWinnerCelebration}
+				onComplete={() => setShowWinnerCelebration(false)}
 			/>
 		</div>
 	)
