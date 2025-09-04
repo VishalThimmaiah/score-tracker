@@ -72,15 +72,15 @@ export class RoundsBasedThemeStrategy implements PlayerThemeStrategy {
 			return {
 				background: 'bg-green-100 dark:bg-green-800/60 text-green-900 dark:text-green-200 border-green-300 dark:border-green-600',
 				progress: 'bg-green-500 dark:bg-green-400',
-				dealerBadge: 'bg-indigo-600 dark:bg-indigo-500 text-white',
-				pickerBadge: 'bg-rose-600 dark:bg-rose-500 text-white'
+				dealerBadge: 'bg-rose-600 dark:bg-rose-500 text-white',
+				pickerBadge: 'bg-indigo-600 dark:bg-indigo-500 text-white'
 			}
 		} else {
 			return {
 				background: 'bg-gray-100 dark:bg-gray-800/60 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600',
 				progress: 'bg-gray-500 dark:bg-gray-400',
-				dealerBadge: 'bg-indigo-600 dark:bg-indigo-500 text-white',
-				pickerBadge: 'bg-rose-600 dark:bg-rose-500 text-white'
+				dealerBadge: 'bg-rose-600 dark:bg-rose-500 text-white',
+				pickerBadge: 'bg-indigo-600 dark:bg-indigo-500 text-white'
 			}
 		}
 	}
