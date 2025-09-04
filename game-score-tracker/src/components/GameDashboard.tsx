@@ -208,7 +208,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 					</motion.div>
 
 					{/* Clear Scores - NEW button with semantic orange color */}
-					{gameStatus === 'playing' && currentRound > 1 && (
+					{currentRound > 1 && (
 						<AlertDialog>
 							<AlertDialogTrigger asChild>
 								<motion.div whileTap={{ scale: 0.95 }}>
