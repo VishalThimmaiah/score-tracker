@@ -176,8 +176,8 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 								duration={500}
 							>
 								<Button 
-									className="w-full h-12 text-lg font-semibold pointer-events-none"
-									size="lg"
+									className="w-full h-10 text-sm font-semibold pointer-events-none"
+									size="default"
 								>
 									<motion.div
 										animate={{ rotate: [0, 15, -15, 0] }}
@@ -188,9 +188,9 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 											ease: "easeInOut"
 										}}
 									>
-										<Plus className="h-5 w-5 mr-2" />
+										<Plus className="h-4 w-4 mr-2" />
 									</motion.div>
-									Add Round Scores
+									Add Scores
 								</Button>
 							</RippleEffect>
 						</motion.div>
@@ -201,22 +201,22 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 						<Button 
 							variant="outline"
 							onClick={onShowHistory}
-							className="h-12 px-4"
+							className="h-10 px-4"
 						>
-							<History className="h-5 w-5" />
+							<History className="h-4 w-4" />
 						</Button>
 					</motion.div>
 
 					{/* Clear Scores - NEW button with semantic orange color */}
-					{currentRound > 1 && (
+					
 						<AlertDialog>
 							<AlertDialogTrigger asChild>
 								<motion.div whileTap={{ scale: 0.95 }}>
 									<Button 
 										variant="outline"
-										className="h-12 px-4 border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-900/20"
+										className="h-10 px-4 border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-900/20"
 									>
-										<Eraser className="h-5 w-5" />
+										<Eraser className="h-4 w-4" />
 									</Button>
 								</motion.div>
 							</AlertDialogTrigger>
@@ -235,19 +235,16 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 								</AlertDialogFooter>
 							</AlertDialogContent>
 						</AlertDialog>
-					)}
-					
-			
-					
+
 					{/* Reset Game - Destructive action (Red/Danger) */}
 					<AlertDialog>
 						<AlertDialogTrigger asChild>
 							<motion.div whileTap={{ scale: 0.95 }}>
 								<Button 
 									variant="outline"
-									className="h-12 px-4 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
+									className="h-10 px-4 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
 								>
-									<RotateCcw className="h-5 w-5" />
+									<RotateCcw className="h-4 w-4" />
 								</Button>
 							</motion.div>
 						</AlertDialogTrigger>
@@ -370,7 +367,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				{/* Instructions */}
 				{gameStatus === 'playing' && currentRound === 1 && (
 					<div className="text-center text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-						<p>Tap &quot;Add Round Scores&quot; to enter points for each player.</p>
+						<p>Tap &quot;Add Scores&quot; to enter points for each player.</p>
 						{gameSettings.gameMode === 'points-based' && (
 							<p>Lower scores are better • Players eliminated at {gameSettings.eliminationScore} points</p>
 						)}

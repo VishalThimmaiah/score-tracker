@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { Download, Share2, QrCode } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import Image from 'next/image';
+import { toast } from 'sonner';
 
 interface QRCodeWithLogoProps {
   url?: string;
@@ -87,7 +88,7 @@ const QRCodeWithLogo: React.FC<QRCodeWithLogoProps> = ({
       qrImage.src = svgUrl;
     } catch (error) {
       console.error('Download failed:', error);
-      alert('Download failed. Please try again.');
+      toast.error('Download failed. Please try again.');
     }
   };
 
@@ -102,17 +103,23 @@ const QRCodeWithLogo: React.FC<QRCodeWithLogoProps> = ({
       } else {
         // Fallback: copy URL to clipboard
         await navigator.clipboard.writeText(url);
-        alert('App URL copied to clipboard!');
+        toast.success('App URL copied to clipboard!');
       }
     } catch (error) {
-      console.error('Share failed:', error);
-      // Final fallback
+      // Handle AbortError (user canceled share) gracefully - don't show error
       try {
         await navigator.clipboard.writeText(url);
-        alert('App URL copied to clipboard!');
+        toast.success('App URL copied to clipboard!');
       } catch {
-        alert(`Share the app: ${url}`);
+        toast.info(`Share the app: ${url}`);
       }
+      if (error instanceof Error && error.name === 'AbortError') {
+        // User canceled the share dialog - this is normal behavior, don't show error
+        return;
+      }
+      
+      console.error('Share failed:', error);
+      // Final fallback for other errors
     }
   };
 
