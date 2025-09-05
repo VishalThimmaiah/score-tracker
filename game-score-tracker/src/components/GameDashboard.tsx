@@ -25,7 +25,7 @@ import AnimatedGrid from './ui/animated-grid'
 import AmbientParticles from './ui/ambient-particles'
 import RippleEffect from './ui/ripple-effect'
 import { ThemeToggle } from './ThemeToggle'
-import { Plus, RotateCcw, Trophy, History, Menu, CircleDot, Play } from 'lucide-react'
+import { Plus, RotateCcw, Trophy, History, Menu, CircleDot, Play, Eraser } from 'lucide-react'
 
 interface GameDashboardProps {
 	onShowHistory: () => void
@@ -46,7 +46,8 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 		getCurrentPicker,
 		getCurrentDealer,
 		getScoreDifferences,
-		resetGame 
+		resetGame,
+		clearScores 
 	} = useGameStore()
 
 	const sortedPlayers = getSortedPlayers()
@@ -161,6 +162,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 
 				{/* Action Buttons */}
 				<div className="flex gap-2">
+					{/* Add Score - Keep original styling */}
 					{gameStatus === 'playing' && (
 						<motion.div 
 							className="flex-1"
@@ -174,8 +176,8 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 								duration={500}
 							>
 								<Button 
-									className="w-full h-12 text-lg font-semibold pointer-events-none"
-									size="lg"
+									className="w-full h-10 text-sm font-semibold pointer-events-none"
+									size="default"
 								>
 									<motion.div
 										animate={{ rotate: [0, 15, -15, 0] }}
@@ -186,36 +188,63 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 											ease: "easeInOut"
 										}}
 									>
-										<Plus className="h-5 w-5 mr-2" />
+										<Plus className="h-4 w-4 mr-2" />
 									</motion.div>
-									Add Round Scores
+									Add Scores
 								</Button>
 							</RippleEffect>
 						</motion.div>
 					)}
 					
-					<motion.div
-						whileTap={{ scale: 0.95 }}
-					>
+					{/* History - Keep original styling */}
+					<motion.div whileTap={{ scale: 0.95 }}>
 						<Button 
 							variant="outline"
 							onClick={onShowHistory}
-							className="h-12 px-4"
+							className="h-10 px-4"
 						>
-							<History className="h-5 w-5" />
+							<History className="h-4 w-4" />
 						</Button>
 					</motion.div>
+
+					{/* Clear Scores - NEW button with semantic orange color */}
 					
+						<AlertDialog>
+							<AlertDialogTrigger asChild>
+								<motion.div whileTap={{ scale: 0.95 }}>
+									<Button 
+										variant="outline"
+										className="h-10 px-4 border-orange-300 text-orange-600 hover:bg-orange-50 hover:text-orange-700 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-900/20"
+									>
+										<Eraser className="h-4 w-4" />
+									</Button>
+								</motion.div>
+							</AlertDialogTrigger>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle>Clear All Scores?</AlertDialogTitle>
+									<AlertDialogDescription>
+										This will clear all scores and reset the game to round 1. Players will remain but all progress will be lost. This cannot be undone.
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel>Cancel</AlertDialogCancel>
+									<AlertDialogAction onClick={clearScores} className="bg-orange-600 hover:bg-orange-700">
+										Clear Scores
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
+
+					{/* Reset Game - Destructive action (Red/Danger) */}
 					<AlertDialog>
 						<AlertDialogTrigger asChild>
-							<motion.div
-								whileTap={{ scale: 0.95 }}
-							>
+							<motion.div whileTap={{ scale: 0.95 }}>
 								<Button 
 									variant="outline"
-									className="h-12 px-4"
+									className="h-10 px-4 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
 								>
-									<RotateCcw className="h-5 w-5" />
+									<RotateCcw className="h-4 w-4" />
 								</Button>
 							</motion.div>
 						</AlertDialogTrigger>
@@ -223,7 +252,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 							<AlertDialogHeader>
 								<AlertDialogTitle>Start New Game?</AlertDialogTitle>
 								<AlertDialogDescription>
-									Are you sure you want to start a new game? This will reset all scores and cannot be undone.
+									Are you sure you want to start a new game? This will reset all scores and players, returning to the setup screen. This cannot be undone.
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 							<AlertDialogFooter>
@@ -269,19 +298,23 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 									}
 								}}
 							>
-								<PlayerCard
-									player={player}
-									rank={index + 1}
-									eliminationScore={gameSettings.eliminationScore}
-									gameMode={gameSettings.gameMode}
-									gameStatus={gameStatus}
-									gameType={gameSettings.gameType}
-									currentRound={currentRound}
-									isWinner={gameStatus === 'finished' && winners.some(w => w.id === player.id)}
-									isPicker={player.id === currentPicker?.id}
-									isDealer={player.id === currentDealer?.id}
-									scoreDifference={scoreDiff}
-								/>
+							<PlayerCard
+								player={player}
+								gameContext={{
+									gameMode: gameSettings.gameMode,
+									gameType: gameSettings.gameType,
+									gameStatus: gameStatus,
+									eliminationScore: gameSettings.eliminationScore,
+									currentRound: currentRound
+								}}
+								playerStatus={{
+									rank: index + 1,
+									isWinner: gameStatus === 'finished' && winners.some(w => w.id === player.id),
+									isPicker: player.id === currentPicker?.id,
+									isDealer: player.id === currentDealer?.id,
+									scoreDifference: scoreDiff
+								}}
+							/>
 							</motion.div>
 						)
 					})}
@@ -334,7 +367,7 @@ export default function GameDashboard({ onShowHistory }: GameDashboardProps) {
 				{/* Instructions */}
 				{gameStatus === 'playing' && currentRound === 1 && (
 					<div className="text-center text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-						<p>Tap &quot;Add Round Scores&quot; to enter points for each player.</p>
+						<p>Tap &quot;Add Scores&quot; to enter points for each player.</p>
 						{gameSettings.gameMode === 'points-based' && (
 							<p>Lower scores are better • Players eliminated at {gameSettings.eliminationScore} points</p>
 						)}

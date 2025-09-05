@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
 import { X, Save } from 'lucide-react'
@@ -38,6 +38,48 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 		}))
 	}, [])
 
+	// Sequential navigation logic - needs to be defined before the hook
+	const handleMoveToNextPlayer = useCallback((currentPlayerId: string) => {
+		// Use setTimeout to ensure we get the latest scores state
+		setTimeout(() => {
+			// Get current scores from state
+			setScores(currentScores => {
+				// Find the next player that doesn't have a score yet
+				const currentIndex = activePlayers.findIndex(p => p.id === currentPlayerId)
+				
+				// Look for next player without a score, starting from current + 1
+				for (let i = 1; i < activePlayers.length; i++) {
+					const nextIndex = (currentIndex + i) % activePlayers.length
+					const nextPlayer = activePlayers[nextIndex]
+					const nextPlayerScore = currentScores[nextPlayer.id]
+					
+					// If this player doesn't have a score, focus on them
+					if (!nextPlayerScore || nextPlayerScore.trim() === '') {
+						// Find the score button element for this player
+						const scoreButton = document.querySelector(`[data-player-id="${nextPlayer.id}"]`) as HTMLElement
+						if (scoreButton) {
+							// Use another setTimeout to ensure DOM is ready and avoid circular calls
+							setTimeout(() => {
+								const keypadHook = keypadRef.current
+								if (keypadHook) {
+									keypadHook.showKeypad(nextPlayer.id, scoreButton, '')
+								}
+							}, 50)
+						}
+						break // Exit the loop once we find the next player
+					}
+				}
+				
+				// Return the same scores (no state change)
+				return currentScores
+			})
+		}, 100) // Small delay to ensure score state is updated
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
+
+	// Store keypad functions in a ref to avoid circular dependencies
+	const keypadRef = useRef<{ showKeypad: (playerId: string, targetElement: HTMLElement, currentScore?: string) => void; hideKeypad: () => void } | null>(null)
+
 	const {
 		isVisible: keypadVisible,
 		position: keypadPosition,
@@ -52,8 +94,15 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 		handleCancel,
 		handleMultiply
 	} = useFloatingKeypad({
-		onScoreEntered: handleScoreEntered
+		onScoreEntered: handleScoreEntered,
+		onMoveToNextPlayer: handleMoveToNextPlayer
 	})
+
+	// Store keypad functions in ref for use in handleMoveToNextPlayer
+	useEffect(() => {
+		keypadRef.current = { showKeypad, hideKeypad }
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	const handlePlayerScoreClick = useCallback((playerId: string, targetElement: HTMLElement) => {
 		const currentScore = scores[playerId] || ''
@@ -66,14 +115,27 @@ export default function ScoreEntrySheet({ isOpen, onClose }: ScoreEntrySheetProp
 		onClose()
 	}, [hideKeypad, onClose])
 
-	// Reset scores when sheet opens/closes
+	// Reset scores when sheet opens/closes and auto-focus first player
 	useEffect(() => {
 		if (isOpen) {
 			setScores({})
+			// Auto-focus on first player after a short delay to ensure DOM is ready
+			setTimeout(() => {
+				if (activePlayers.length > 0) {
+					const firstPlayer = activePlayers[0]
+					const firstScoreButton = document.querySelector(`[data-player-id="${firstPlayer.id}"]`) as HTMLElement
+					if (firstScoreButton && keypadRef.current) {
+						keypadRef.current.showKeypad(firstPlayer.id, firstScoreButton, '')
+					}
+				}
+			}, 200) // Slightly longer delay to ensure sheet animation is complete
 		} else {
-			hideKeypad()
+			if (keypadRef.current) {
+				keypadRef.current.hideKeypad()
+			}
 		}
-	}, [isOpen, hideKeypad])
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen])
 
 	// Handle escape key to close
 	useEffect(() => {

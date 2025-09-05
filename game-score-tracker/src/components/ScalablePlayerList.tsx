@@ -59,6 +59,7 @@ const PlayerRow = memo(({ player, score, isCompleted, onScoreClick }: PlayerRowP
 							ref={scoreButtonRef}
 							variant="outline"
 							onClick={handleScoreClick}
+							data-player-id={player.id}
 							className={`min-w-[80px] h-10 text-base font-medium ${
 								isCompleted 
 									? 'border-green-400 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-900/20 dark:text-green-400' 

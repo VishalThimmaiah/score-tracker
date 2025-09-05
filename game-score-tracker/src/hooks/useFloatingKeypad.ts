@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 interface KeypadPosition {
 	x?: number
@@ -9,13 +9,20 @@ interface KeypadPosition {
 interface UseFloatingKeypadProps {
 	onScoreEntered: (playerId: string, score: number) => void
 	onCancel?: () => void
+	onMoveToNextPlayer?: (currentPlayerId: string) => void
 }
 
-export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypadProps) {
+export function useFloatingKeypad({ onScoreEntered, onCancel, onMoveToNextPlayer }: UseFloatingKeypadProps) {
+	// Store the callback in a ref to avoid stale closures
+	const moveToNextPlayerRef = useRef(onMoveToNextPlayer)
+
+	// Update the ref when the callback changes - but don't cause re-renders
+	moveToNextPlayerRef.current = onMoveToNextPlayer
 	const [isVisible, setIsVisible] = useState(false)
 	const [position, setPosition] = useState<KeypadPosition>({ x: 0, y: 0 })
 	const [activePlayerId, setActivePlayerId] = useState<string | null>(null)
 	const [currentValue, setCurrentValue] = useState('')
+	const isConfirmingRef = useRef(false)
 
 	const showKeypad = useCallback((playerId: string, targetElement: HTMLElement, currentScore?: string) => {
 		// Use CSS-based positioning instead of JavaScript calculations
@@ -44,11 +51,29 @@ export function useFloatingKeypad({ onScoreEntered, onCancel }: UseFloatingKeypa
 	}, [])
 
 	const handleConfirm = useCallback(() => {
-		if (currentValue !== '' && activePlayerId) {
+		if (currentValue !== '' && activePlayerId && !isConfirmingRef.current) {
 			const score = parseInt(currentValue, 10)
 			if (!isNaN(score) && score >= 0) {
+				// Prevent double-confirmation
+				isConfirmingRef.current = true
+
+				// Save the current player ID before hiding keypad
+				const currentPlayerId = activePlayerId
+
+				// Save the score
 				onScoreEntered(activePlayerId, score)
+
+				// Hide keypad first
 				hideKeypad()
+
+				// Use setTimeout to prevent immediate reopening and allow for next player navigation
+				setTimeout(() => {
+					isConfirmingRef.current = false
+					// Try to move to next player if callback is provided
+					if (moveToNextPlayerRef.current) {
+						moveToNextPlayerRef.current(currentPlayerId)
+					}
+				}, 100) // Small delay to prevent event conflicts
 			}
 		}
 	}, [currentValue, activePlayerId, onScoreEntered, hideKeypad])

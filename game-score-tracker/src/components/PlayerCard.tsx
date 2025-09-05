@@ -1,133 +1,128 @@
 'use client'
 
-import { Player, GameMode, GameType, ScoreDifference } from '@/store/gameStore'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { Player, GameMode, GameType, ScoreDifference, useGameStore } from '@/store/gameStore'
+import { PLAYER_THEME_STRATEGIES } from '@/strategies/playerThemeStrategies'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Crown, Skull, CircleDot, Play } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-interface PlayerCardProps {
-	player: Player
-	rank: number
-	eliminationScore: number
+interface GameContext {
 	gameMode: GameMode
-	gameStatus: 'setup' | 'playing' | 'finished'
 	gameType: GameType
+	gameStatus: 'setup' | 'playing' | 'finished'
+	eliminationScore: number
 	currentRound: number
+}
+
+interface PlayerStatus {
 	isWinner?: boolean
 	isDealer?: boolean
 	isPicker?: boolean
+	rank: number
 	scoreDifference?: ScoreDifference
 }
 
-export default function PlayerCard({ player, rank, eliminationScore, gameMode, gameStatus, currentRound, isWinner = false, isDealer = false, isPicker = false, scoreDifference }: PlayerCardProps) {
+interface PlayerCardProps {
+	player: Player
+	gameContext: GameContext
+	playerStatus: PlayerStatus
+}
 
-	// Calculate score percentage for color coding
-	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
+export default function PlayerCard({ player, gameContext, playerStatus }: PlayerCardProps) {
+	const { gameMode, gameStatus, eliminationScore, currentRound } = gameContext
+	const { rank, isWinner = false, isDealer = false, isPicker = false, scoreDifference } = playerStatus
 	
-	// Determine background color based on game mode
-	const getBackgroundColor = () => {
-		if (player.isEliminated) {
-			return 'bg-gray-800 dark:bg-gray-700 text-white border-gray-700 dark:border-gray-600'
-		}
-		
-		if (gameMode === 'points-based') {
-			// Points-based: Use score percentage logic
-			if (scorePercentage < 25) {
-				return 'bg-green-100 dark:bg-green-800/60 text-green-900 dark:text-green-200 border-green-300 dark:border-green-600'
-			} else if (scorePercentage < 50) {
-				return 'bg-yellow-100 dark:bg-yellow-800/60 text-yellow-900 dark:text-yellow-200 border-yellow-300 dark:border-yellow-600'
-			} else if (scorePercentage < 75) {
-				return 'bg-orange-100 dark:bg-orange-800/60 text-orange-900 dark:text-orange-200 border-orange-300 dark:border-orange-600'
-			} else {
-				return 'bg-red-100 dark:bg-red-800/60 text-red-900 dark:text-red-200 border-red-300 dark:border-red-600'
-			}
-		} else {
-			// Rounds-based: Green only for potential winners (lowest score), default for others
-			if (scoreDifference?.isLeader) {
-				return 'bg-green-100 dark:bg-green-800/60 text-green-900 dark:text-green-200 border-green-300 dark:border-green-600'
-			} else {
-				return 'bg-gray-100 dark:bg-gray-800/60 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600'
-			}
-		}
+	const [showEliminationDialog, setShowEliminationDialog] = useState(false)
+	const [isLongPressing, setIsLongPressing] = useState(false)
+	const longPressTimer = useRef<NodeJS.Timeout | null>(null)
+	const { eliminatePlayerManually } = useGameStore()
+
+	// Use theme strategy to get all colors - eliminates all if-else chains
+	const themeStrategy = PLAYER_THEME_STRATEGIES[gameMode]
+	const theme = themeStrategy.getTheme(player, eliminationScore, scoreDifference)
+
+	// Calculate score percentage for progress bar display
+	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
+
+	// Check if long-press elimination should be available
+	const canEliminate = gameMode === 'points-based' && 
+						 gameStatus === 'playing' && 
+						 !player.isEliminated
+
+	// Handle manual elimination
+	const handleEliminate = () => {
+		eliminatePlayerManually(player.id)
+		setShowEliminationDialog(false)
 	}
 
-	// Get progress bar color
-	const getProgressColor = () => {
-		if (player.isEliminated) return 'bg-gray-600 dark:bg-gray-500'
-		if (scorePercentage < 25) return 'bg-green-500 dark:bg-green-400'
-		if (scorePercentage < 50) return 'bg-yellow-500 dark:bg-yellow-400'
-		if (scorePercentage < 75) return 'bg-orange-500 dark:bg-orange-400'
-		return 'bg-red-500 dark:bg-red-400'
-	}
+	// Long-press handlers with timer
+	const handleLongPressStart = useCallback(() => {
+		if (!canEliminate) return
 
-	// Get dealer badge color that matches the theme
-	const getDealerBadgeColor = () => {
-		if (player.isEliminated) {
-			return 'bg-gray-600 dark:bg-gray-500 text-white'
-		}
+		setIsLongPressing(true)
 		
-		if (gameMode === 'points-based') {
-			// Points-based: Use score percentage logic
-			if (scorePercentage < 25) {
-				return 'bg-green-600 dark:bg-green-500 text-white'
-			} else if (scorePercentage < 50) {
-				return 'bg-yellow-600 dark:bg-yellow-500 text-white'
-			} else if (scorePercentage < 75) {
-				return 'bg-orange-600 dark:bg-orange-500 text-white'
-			} else {
-				return 'bg-red-600 dark:bg-red-500 text-white'
-			}
-		} else {
-			// Rounds-based: Option 3 - Indigo for Dealer
-			return 'bg-indigo-600 dark:bg-indigo-500 text-white'
-		}
-	}
+		// Set timer for long press (800ms)
+		longPressTimer.current = setTimeout(() => {
+			setShowEliminationDialog(true)
+			setIsLongPressing(false)
+		}, 800)
+	}, [canEliminate])
 
-	// Get picker badge color (different from dealer)
-	const getPickerBadgeColor = () => {
-		if (player.isEliminated) {
-			return 'bg-gray-700 dark:bg-gray-600 text-white'
+	const handleLongPressEnd = useCallback(() => {
+		if (longPressTimer.current) {
+			clearTimeout(longPressTimer.current)
+			longPressTimer.current = null
 		}
-		
-		if (gameMode === 'points-based') {
-			// Points-based: Use score percentage logic
-			if (scorePercentage < 25) {
-				return 'bg-purple-600 dark:bg-purple-500 text-white'
-			} else if (scorePercentage < 50) {
-				return 'bg-indigo-600 dark:bg-indigo-500 text-white'
-			} else if (scorePercentage < 75) {
-				return 'bg-blue-600 dark:bg-blue-500 text-white'
-			} else {
-				return 'bg-violet-600 dark:bg-violet-500 text-white'
+		setIsLongPressing(false)
+	}, [])
+
+	// Cleanup timer on unmount
+	useEffect(() => {
+		return () => {
+			if (longPressTimer.current) {
+				clearTimeout(longPressTimer.current)
 			}
-		} else {
-			// Rounds-based: Option 3 - Rose for Picker (avoiding green conflict)
-			return 'bg-rose-600 dark:bg-rose-500 text-white'
 		}
-	}
+	}, [])
 
 	return (
+		<>
 		<motion.div
 			whileTap={{ scale: 0.98 }}
-			initial={{ opacity: 0, y: 20 }}
 			animate={{ 
 				opacity: 1, 
 				y: 0,
-				scale: [1, 1.01, 1] // Subtle breathing effect
+				scale: isLongPressing ? 0.95 : [1, 1.01, 1] // Long-press feedback or breathing effect
 			}}
 			transition={{ 
 				type: "spring", 
 				stiffness: 300, 
 				damping: 20,
 				scale: {
-					duration: 3,
-					repeat: Infinity,
+					duration: isLongPressing ? 0.2 : 3,
+					repeat: isLongPressing ? 0 : Infinity,
 					repeatType: "reverse",
 					ease: "easeInOut"
 				}
 			}}
+			onTouchStart={handleLongPressStart}
+			onTouchEnd={handleLongPressEnd}
+			onMouseDown={handleLongPressStart}
+			onMouseUp={handleLongPressEnd}
+			onMouseLeave={handleLongPressEnd}
 		>
-			<Card className={`py-0 ${getBackgroundColor()} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''} 
+			<Card className={`py-0 ${theme.background} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''} 
 				relative overflow-hidden
 				before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent 
 				before:translate-x-[-100%] before:animate-pulse`}>
@@ -151,13 +146,13 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 								<h3 className="font-semibold text-lg">{player.name}</h3>
 								<div className="flex items-center gap-1">
 									{gameStatus !== 'finished' && isPicker && (
-										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getPickerBadgeColor()}`}>
+										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${theme.pickerBadge}`}>
 											<Play className="h-3 w-3" />
 											<span>Picker</span>
 										</div>
 									)}
 									{gameStatus !== 'finished' && isDealer && (
-										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getDealerBadgeColor()}`}>
+										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${theme.dealerBadge}`}>
 											<CircleDot className="h-3 w-3" />
 											<span>Dealer</span>
 										</div>
@@ -165,9 +160,17 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 								</div>
 							</div>
 							{player.isEliminated && (
-								<div className="flex items-center gap-1 text-sm opacity-75">
-									<Skull className="h-3 w-3" />
-									<span>Eliminated</span>
+								<div className="flex items-center gap-1 mt-1">
+									{player.withdrawnManually ? (
+										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${theme.withdrawalBadge}`}>
+											<span>QUIT</span>
+										</div>
+									) : (
+										<div className="flex items-center gap-1 text-sm opacity-75">
+											<Skull className="h-3 w-3" />
+											<span>Eliminated</span>
+										</div>
+									)}
 								</div>
 							)}
 							
@@ -202,7 +205,7 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 						</div>
 						<div className="w-full bg-white/30 rounded-full h-2">
 							<div 
-								className={`h-2 rounded-full transition-all duration-500 ${getProgressColor()}`}
+								className={`h-2 rounded-full transition-all duration-500 ${theme.progress}`}
 								style={{ width: `${Math.min(scorePercentage, 100)}%` }}
 							/>
 						</div>
@@ -221,5 +224,27 @@ export default function PlayerCard({ player, rank, eliminationScore, gameMode, g
 				</CardContent>
 			</Card>
 		</motion.div>
+
+		{/* Elimination Confirmation Dialog */}
+		<AlertDialog open={showEliminationDialog} onOpenChange={setShowEliminationDialog}>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Eliminate Player?</AlertDialogTitle>
+					<AlertDialogDescription>
+						Are you sure you want to eliminate <strong>{player.name}</strong>? This action cannot be undone and they will be removed from the current game.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel>Cancel</AlertDialogCancel>
+					<AlertDialogAction 
+						onClick={handleEliminate}
+						className="bg-red-600 hover:bg-red-700"
+					>
+						Eliminate Player
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+		</>
 	)
 }

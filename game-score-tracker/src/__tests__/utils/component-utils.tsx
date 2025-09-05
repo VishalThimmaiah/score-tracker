@@ -183,12 +183,12 @@ export const userInteractions = {
 		await user.click(startButton)
 	},
 
-	// Add round scores
+	// Add scores
 	addRoundScores: async (scores: number[], screen: Screen) => {
 		const user = userEvent.setup()
 		
 		// Open score entry
-		const addScoresButton = screen.getByRole('button', { name: /add round scores/i })
+		const addScoresButton = screen.getByRole('button', { name: /add scores/i })
 		await user.click(addScoresButton)
 		
 		// Enter scores for each player
