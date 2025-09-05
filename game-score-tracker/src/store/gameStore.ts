@@ -367,9 +367,13 @@ export const useGameStore = create<GameStore>()(
 						newPickerIndex = findNextActivePicker(state.currentPickerIndex, updatedPlayers)
 					}
 
-					// Check if game should end (only one active player left)
-					const activePlayers = updatedPlayers.filter(p => !p.isEliminated)
-					const gameStatus = activePlayers.length <= 1 ? 'finished' : state.gameStatus
+					// Use state machine to determine if game should end
+					const context = {
+						players: updatedPlayers,
+						gameSettings: state.gameSettings,
+						currentRound: state.currentRound
+					}
+					const gameStatus = gameStateMachine.getNextStateAfterRound(context)
 
 					// Auto-save game when it finishes
 					if (gameStatus === 'finished') {

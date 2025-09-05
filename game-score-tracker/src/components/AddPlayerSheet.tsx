@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { Button } from '@/components/ui/button'
 import {
 	Dialog,
@@ -74,8 +75,8 @@ export default function AddPlayerSheet({ isOpen, onClose }: AddPlayerSheetProps)
 
 	return (
 		<Dialog open={isOpen} onOpenChange={handleClose}>
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
+			<DialogContent className="sm:max-w-md max-h-[85vh] sm:max-h-[90vh] flex flex-col gap-0 overflow-hidden p-0" style={{ display: 'flex' }}>
+				<DialogHeader className="flex-shrink-0 p-6 pb-0">
 					<DialogTitle className="flex items-center gap-2">
 						<Plus className="h-5 w-5" />
 						Add Player Mid-Game
@@ -85,7 +86,7 @@ export default function AddPlayerSheet({ isOpen, onClose }: AddPlayerSheetProps)
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-6">
+				<div className="flex-1 overflow-y-auto space-y-6 p-6 pt-4">
 					{/* Player Name Input */}
 					<div className="space-y-2">
 						<Label htmlFor="player-name" className="flex items-center gap-2">
@@ -162,8 +163,8 @@ export default function AddPlayerSheet({ isOpen, onClose }: AddPlayerSheetProps)
 								Choose where to insert the new player in the rotation:
 							</div>
 							
-							{/* Player List with Insert Position */}
-							<div className="space-y-2">
+							{/* Player List with Insert Position - Scrollable */}
+							<div className="max-h-[200px] overflow-y-auto space-y-2 mb-4">
 								{players.map((player, index) => (
 									<div key={player.id}>
 										{/* Insert Position Indicator */}
@@ -208,8 +209,8 @@ export default function AddPlayerSheet({ isOpen, onClose }: AddPlayerSheetProps)
 								)}
 							</div>
 
-							{/* Position Controls */}
-							<div className="flex items-center justify-center gap-2 mt-4">
+							{/* Position Controls - Always Visible */}
+							<div className="flex items-center justify-center gap-2">
 								<Button
 									variant="outline"
 									size="sm"
@@ -233,9 +234,11 @@ export default function AddPlayerSheet({ isOpen, onClose }: AddPlayerSheetProps)
 							</div>
 						</div>
 					</div>
+				</div>
 
-					{/* Action Buttons */}
-					<div className="flex gap-2 pt-4">
+				{/* Fixed Action Buttons Footer */}
+				<div className="flex-shrink-0 border-t p-6 pt-4">
+					<div className="flex gap-2">
 						<Button
 							variant="outline"
 							onClick={handleClose}
