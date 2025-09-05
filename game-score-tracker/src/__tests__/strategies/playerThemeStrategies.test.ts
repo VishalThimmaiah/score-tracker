@@ -15,24 +15,23 @@ describe('PlayerThemeStrategies', () => {
 			isEliminated: false
 		})
 
-		it('should have consistent dealer and picker colors across all score ranges', () => {
+		it('should have consistent dealer colors and dynamic picker colors across all score ranges', () => {
 			// Test different score percentages
 			const testCases = [
-				{ score: 10, description: 'low score (10%)' },
-				{ score: 30, description: 'medium-low score (30%)' },
-				{ score: 60, description: 'medium-high score (60%)' },
-				{ score: 90, description: 'high score (90%)' }
+				{ score: 10, description: 'low score (10%)', expectedPickerBadge: 'bg-green-600 dark:bg-green-500 text-white' },
+				{ score: 30, description: 'medium-low score (30%)', expectedPickerBadge: 'bg-yellow-600 dark:bg-yellow-500 text-white' },
+				{ score: 60, description: 'medium-high score (60%)', expectedPickerBadge: 'bg-orange-600 dark:bg-orange-500 text-white' },
+				{ score: 90, description: 'high score (90%)', expectedPickerBadge: 'bg-red-600 dark:bg-red-500 text-white' }
 			]
 
 			const expectedDealerBadge = 'bg-rose-600 dark:bg-rose-500 text-white'
-			const expectedPickerBadge = 'bg-indigo-600 dark:bg-indigo-500 text-white'
 
-			testCases.forEach(({ score, description }) => {
+			testCases.forEach(({ score, description, expectedPickerBadge }) => {
 				const player = createMockPlayer(score)
 				const theme = strategy.getTheme(player, eliminationScore)
 
 				expect(theme.dealerBadge, `Dealer badge should be consistent for ${description}`).toBe(expectedDealerBadge)
-				expect(theme.pickerBadge, `Picker badge should be consistent for ${description}`).toBe(expectedPickerBadge)
+				expect(theme.pickerBadge, `Picker badge should be dynamic for ${description}`).toBe(expectedPickerBadge)
 			})
 		})
 
