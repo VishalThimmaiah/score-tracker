@@ -1,6 +1,7 @@
 'use client'
 
-import { useGameStore } from '@/store/gameStore'
+import React from 'react'
+import { useGameStore, type Player } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from './ThemeToggle'
@@ -13,24 +14,73 @@ interface GameHistoryProps {
 export default function GameHistory({ onBack }: GameHistoryProps) {
 	const { players, gameSettings, gameStatus } = useGameStore()
 
-	// Calculate the maximum number of rounds played
+	// Helper functions and computed values
+	const isPointsBasedGame = gameSettings.gameMode === 'points-based'
 	const maxRounds = Math.max(...players.map(p => p.scores.length), 0)
+	
+	const calculateRunningTotal = (scores: number[], upToIndex: number) => 
+		scores.slice(0, upToIndex + 1).reduce((sum, score) => sum + score, 0)
+	
+	const isPlayerEliminated = (runningTotal: number) => 
+		isPointsBasedGame && runningTotal >= gameSettings.eliminationScore
+	
+	const getScoreTextClass = (isEliminated: boolean) => 
+		`text-lg font-semibold ${isEliminated && isPointsBasedGame ? 'text-muted-foreground' : 'text-foreground'}`
+	
+	const getTotalTextClass = (isEliminated: boolean) => 
+		`text-xs ${isEliminated && isPointsBasedGame ? 'text-muted-foreground/80' : 'text-muted-foreground'}`
+	
+	const getPlayerRowClass = (player: Player, index: number) => {
+		if (isPointsBasedGame && player.isEliminated) {
+			return 'bg-muted text-muted-foreground'
+		}
+		if (index === 0 && gameStatus === 'finished') {
+			return 'bg-yellow-100 text-yellow-900 border border-yellow-300 dark:bg-yellow-900 dark:text-yellow-100 dark:border-yellow-600'
+		}
+		return 'bg-card border'
+	}
+	
+	const getPlayerBadgeClass = (player: Player, index: number) => {
+		const isWinner = index === 0 && gameStatus === 'finished' && !(isPointsBasedGame && player.isEliminated)
+		const isEliminated = isPointsBasedGame && player.isEliminated
+		
+		if (isWinner) return 'bg-yellow-500 text-white dark:bg-yellow-600'
+		if (isEliminated) return 'bg-muted-foreground/50 text-background'
+		return 'bg-primary text-primary-foreground'
+	}
+	
+	const shouldShowWinnerIcon = (player: Player, index: number) => 
+		index === 0 && gameStatus === 'finished' && !(isPointsBasedGame && player.isEliminated)
 	
 	// Create rounds data for the table
 	const rounds = Array.from({ length: maxRounds }, (_, index) => {
 		const roundNumber = index + 1
-		const roundData = players.map(player => ({
-			playerId: player.id,
-			playerName: player.name,
-			score: player.scores[index] || 0,
-			runningTotal: player.scores.slice(0, index + 1).reduce((sum, score) => sum + score, 0),
-			isEliminated: player.scores.slice(0, index + 1).reduce((sum, score) => sum + score, 0) >= gameSettings.eliminationScore
-		}))
+		const roundData = players.map(player => {
+			const runningTotal = calculateRunningTotal(player.scores, index)
+			return {
+				playerId: player.id,
+				playerName: player.name,
+				score: player.scores[index] || 0,
+				runningTotal,
+				isEliminated: isPlayerEliminated(runningTotal)
+			}
+		})
 		
 		return {
 			round: roundNumber,
 			players: roundData
 		}
+	})
+	
+	// Sort players for final standings
+	const sortedPlayers = players.slice().sort((a, b) => {
+		// For points-based games, eliminated players go to bottom
+		if (isPointsBasedGame) {
+			if (a.isEliminated && !b.isEliminated) return 1
+			if (!a.isEliminated && b.isEliminated) return -1
+		}
+		// Sort by total score (lowest first)
+		return a.totalScore - b.totalScore
 	})
 
 	return (
@@ -120,25 +170,23 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 												</td>
 												{round.players.map(playerData => {
 													const isEliminated = playerData.isEliminated
-													const wasEliminatedThisRound = !rounds[round.round - 2]?.players.find(p => p.playerId === playerData.playerId)?.isEliminated && isEliminated
+													const wasEliminatedThisRound = isPointsBasedGame && 
+														!rounds[round.round - 2]?.players.find(p => p.playerId === playerData.playerId)?.isEliminated && 
+														isEliminated
 													
 													return (
 														<td key={playerData.playerId} className="p-3 text-center">
 															<div className="space-y-1">
 																{/* Round Score */}
-																<div className={`text-lg font-semibold ${
-																	isEliminated ? 'text-muted-foreground' : 'text-foreground'
-																}`}>
+																<div className={getScoreTextClass(isEliminated)}>
 																	+{playerData.score}
 																</div>
 																{/* Running Total */}
-																<div className={`text-xs ${
-																	isEliminated ? 'text-muted-foreground/80' : 'text-muted-foreground'
-																}`}>
+																<div className={getTotalTextClass(isEliminated)}>
 																	Total: {playerData.runningTotal}
 																</div>
-																{/* Elimination Indicator */}
-																{wasEliminatedThisRound && (
+																{/* Elimination Indicator - Only for points-based games */}
+																{isPointsBasedGame && wasEliminatedThisRound && (
 																	<div className="text-xs text-red-600 dark:text-red-400 font-medium">
 																		💀 Eliminated
 																	</div>
@@ -174,55 +222,34 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-3">
-								{players
-									.slice()
-									.sort((a, b) => {
-										// Eliminated players go to bottom
-										if (a.isEliminated && !b.isEliminated) return 1
-										if (!a.isEliminated && b.isEliminated) return -1
-										// Sort by total score (lowest first)
-										return a.totalScore - b.totalScore
-									})
-									.map((player, index) => (
-										<div 
-											key={player.id}
-											className={`flex items-center justify-between p-3 rounded-lg ${
-												player.isEliminated 
-													? 'bg-muted text-muted-foreground' 
-													: index === 0 && gameStatus === 'finished'
-														? 'bg-yellow-100 text-yellow-900 border border-yellow-300 dark:bg-yellow-900 dark:text-yellow-100 dark:border-yellow-600'
-														: 'bg-card border'
-											}`}
-										>
-											<div className="flex items-center gap-3">
-												<div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-													index === 0 && gameStatus === 'finished' && !player.isEliminated
-														? 'bg-yellow-500 text-white dark:bg-yellow-600'
-														: player.isEliminated
-															? 'bg-muted-foreground/50 text-background'
-															: 'bg-primary text-primary-foreground'
-												}`}>
-													{index === 0 && gameStatus === 'finished' && !player.isEliminated ? (
-														<Trophy className="h-4 w-4" />
-													) : (
-														index + 1
-													)}
-												</div>
-												<div>
-													<div className="font-semibold">{player.name}</div>
-													{player.isEliminated && (
-														<div className="text-sm opacity-75">Eliminated</div>
-													)}
-												</div>
+								{sortedPlayers.map((player, index) => (
+									<div 
+										key={player.id}
+										className={`flex items-center justify-between p-3 rounded-lg ${getPlayerRowClass(player, index)}`}
+									>
+										<div className="flex items-center gap-3">
+											<div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${getPlayerBadgeClass(player, index)}`}>
+												{shouldShowWinnerIcon(player, index) ? (
+													<Trophy className="h-4 w-4" />
+												) : (
+													index + 1
+												)}
 											</div>
-											<div className="text-right">
-												<div className="text-xl font-bold">{player.totalScore}</div>
-												<div className="text-sm opacity-75">
-													{player.scores.length} rounds
-												</div>
+											<div>
+												<div className="font-semibold">{player.name}</div>
+												{isPointsBasedGame && player.isEliminated && (
+													<div className="text-sm opacity-75">Eliminated</div>
+												)}
 											</div>
 										</div>
-									))}
+										<div className="text-right">
+											<div className="text-xl font-bold">{player.totalScore}</div>
+											<div className="text-sm opacity-75">
+												{player.scores.length} rounds
+											</div>
+										</div>
+									</div>
+								))}
 							</div>
 						</CardContent>
 					</Card>
