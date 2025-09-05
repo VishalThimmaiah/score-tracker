@@ -28,29 +28,29 @@ export class PointsBasedThemeStrategy implements PlayerThemeStrategy {
 			return {
 				background: 'bg-green-100 dark:bg-green-800/60 text-green-900 dark:text-green-200 border-green-300 dark:border-green-600',
 				progress: 'bg-green-500 dark:bg-green-400',
-				dealerBadge: 'bg-green-600 dark:bg-green-500 text-white',
-				pickerBadge: 'bg-purple-600 dark:bg-purple-500 text-white'
+				dealerBadge: 'bg-rose-600 dark:bg-rose-500 text-white',
+				pickerBadge: 'bg-indigo-600 dark:bg-indigo-500 text-white'
 			}
 		} else if (scorePercentage < 50) {
 			return {
 				background: 'bg-yellow-100 dark:bg-yellow-800/60 text-yellow-900 dark:text-yellow-200 border-yellow-300 dark:border-yellow-600',
 				progress: 'bg-yellow-500 dark:bg-yellow-400',
-				dealerBadge: 'bg-yellow-600 dark:bg-yellow-500 text-white',
+				dealerBadge: 'bg-rose-600 dark:bg-rose-500 text-white',
 				pickerBadge: 'bg-indigo-600 dark:bg-indigo-500 text-white'
 			}
 		} else if (scorePercentage < 75) {
 			return {
 				background: 'bg-orange-100 dark:bg-orange-800/60 text-orange-900 dark:text-orange-200 border-orange-300 dark:border-orange-600',
 				progress: 'bg-orange-500 dark:bg-orange-400',
-				dealerBadge: 'bg-orange-600 dark:bg-orange-500 text-white',
-				pickerBadge: 'bg-blue-600 dark:bg-blue-500 text-white'
+				dealerBadge: 'bg-rose-600 dark:bg-rose-500 text-white',
+				pickerBadge: 'bg-indigo-600 dark:bg-indigo-500 text-white'
 			}
 		} else {
 			return {
 				background: 'bg-red-100 dark:bg-red-800/60 text-red-900 dark:text-red-200 border-red-300 dark:border-red-600',
 				progress: 'bg-red-500 dark:bg-red-400',
-				dealerBadge: 'bg-red-600 dark:bg-red-500 text-white',
-				pickerBadge: 'bg-violet-600 dark:bg-violet-500 text-white'
+				dealerBadge: 'bg-rose-600 dark:bg-rose-500 text-white',
+				pickerBadge: 'bg-indigo-600 dark:bg-indigo-500 text-white'
 			}
 		}
 	}
