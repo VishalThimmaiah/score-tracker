@@ -10,6 +10,7 @@ export interface Player {
 	scores: number[]
 	totalScore: number
 	isEliminated: boolean
+	withdrawnManually?: boolean
 }
 
 export interface ScoreDifference {
@@ -17,6 +18,21 @@ export interface ScoreDifference {
 	difference: number
 	isLeader: boolean
 	hasMultipleLeaders: boolean
+}
+
+export interface RoundHistory {
+	roundNumber: number
+	scores: { playerId: string; score: number }[]
+}
+
+export interface CompletedGame {
+	id: string
+	completedAt: Date
+	gameSettings: GameSettings
+	players: Player[]
+	rounds: RoundHistory[]
+	winners: Player[]
+	totalRounds: number
 }
 
 export type GameType = '5-cards' | 'secret-7' | 'custom'
@@ -39,6 +55,7 @@ export interface GameState {
 	gameStatus: 'setup' | 'playing' | 'finished'
 	currentRound: number
 	currentPickerIndex: number
+	gameHistory: CompletedGame[]
 }
 
 interface GameActions {
@@ -58,6 +75,14 @@ interface GameActions {
 	resetGame: () => void
 	pauseGame: () => void
 	clearScores: () => void
+	eliminatePlayerManually: (id: string) => void
+	addPlayerMidGame: (name: string, startingPoints: number, insertIndex: number) => void
+
+	// Game history actions
+	saveCompletedGame: () => void
+	getGameHistory: () => CompletedGame[]
+	getCompletedGameById: (id: string) => CompletedGame | undefined
+	clearGameHistory: () => void
 
 	// Utility actions
 	getPlayerById: (id: string) => Player | undefined
@@ -84,7 +109,8 @@ const initialState: GameState = {
 	},
 	gameStatus: 'setup',
 	currentRound: 0,
-	currentPickerIndex: 0
+	currentPickerIndex: 0,
+	gameHistory: []
 }
 
 export const useGameStore = create<GameStore>()(
@@ -256,6 +282,14 @@ export const useGameStore = create<GameStore>()(
 					}
 					const gameStatus = gameStateMachine.getNextStateAfterRound(context)
 
+					// Auto-save game when it finishes
+					if (gameStatus === 'finished') {
+						// Use setTimeout to ensure state is updated before saving
+						setTimeout(() => {
+							get().saveCompletedGame()
+						}, 100)
+					}
+
 					return {
 						players: updatedPlayers,
 						currentRound: newRound,
@@ -271,8 +305,10 @@ export const useGameStore = create<GameStore>()(
 
 			resetGame: () => {
 				const newStatus = gameStateMachine.resetGame()
+				const currentHistory = get().gameHistory
 				set({
 					...initialState,
+					gameHistory: currentHistory, // Preserve game history
 					gameStatus: newStatus
 				})
 			},
@@ -296,6 +332,159 @@ export const useGameStore = create<GameStore>()(
 					currentPickerIndex: 0,
 					gameStatus: 'setup'
 				}))
+			},
+
+			eliminatePlayerManually: (id: string) => {
+				set((state) => {
+					// Only allow manual elimination in points-based games during play
+					if (state.gameSettings.gameMode !== 'points-based' || state.gameStatus !== 'playing') {
+						return state
+					}
+
+					const updatedPlayers = state.players.map(player =>
+						player.id === id ? { ...player, isEliminated: true, withdrawnManually: true } : player
+					)
+
+					// Check if we need to adjust picker index if current picker was eliminated
+					let newPickerIndex = state.currentPickerIndex
+					const currentPicker = state.players[state.currentPickerIndex]
+
+					if (currentPicker?.id === id) {
+						// Find next active picker
+						const findNextActivePicker = (currentIndex: number, playersList: Player[]) => {
+							const totalPlayers = playersList.length
+							let nextIndex = (currentIndex + 1) % totalPlayers
+							let attempts = 0
+
+							while (playersList[nextIndex].isEliminated && attempts < totalPlayers) {
+								nextIndex = (nextIndex + 1) % totalPlayers
+								attempts++
+							}
+
+							return nextIndex
+						}
+
+						newPickerIndex = findNextActivePicker(state.currentPickerIndex, updatedPlayers)
+					}
+
+					// Check if game should end (only one active player left)
+					const activePlayers = updatedPlayers.filter(p => !p.isEliminated)
+					const gameStatus = activePlayers.length <= 1 ? 'finished' : state.gameStatus
+
+					// Auto-save game when it finishes
+					if (gameStatus === 'finished') {
+						setTimeout(() => {
+							get().saveCompletedGame()
+						}, 100)
+					}
+
+					return {
+						...state,
+						players: updatedPlayers,
+						currentPickerIndex: newPickerIndex,
+						gameStatus
+					}
+				})
+			},
+
+			addPlayerMidGame: (name: string, startingPoints: number, insertIndex: number) => {
+				set((state) => {
+					// Only allow adding players in points-based games during play
+					if (state.gameSettings.gameMode !== 'points-based' || state.gameStatus !== 'playing') {
+						return state
+					}
+
+					const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+
+					// Create scores array with appropriate values for completed rounds
+					const completedRounds = state.currentRound - 1
+					const scores: number[] = []
+
+					// Fill in scores for completed rounds (using 0 as placeholder)
+					for (let i = 0; i < completedRounds; i++) {
+						scores.push(0)
+					}
+
+					const newPlayer: Player = {
+						id,
+						name: name.trim(),
+						scores,
+						totalScore: startingPoints,
+						isEliminated: false
+					}
+
+					// Insert player at specified index
+					const newPlayers = [...state.players]
+					newPlayers.splice(insertIndex, 0, newPlayer)
+
+					// Adjust picker index if insertion affects current picker position
+					let newPickerIndex = state.currentPickerIndex
+					if (insertIndex <= state.currentPickerIndex) {
+						newPickerIndex = state.currentPickerIndex + 1
+					}
+
+					return {
+						...state,
+						players: newPlayers,
+						currentPickerIndex: newPickerIndex
+					}
+				})
+			},
+
+			// Game history actions
+			saveCompletedGame: () => {
+				const state = get()
+				if (state.gameStatus !== 'finished' || state.players.length === 0) {
+					return // Only save completed games
+				}
+
+				// Build round history from player scores
+				const maxRounds = Math.max(...state.players.map(p => p.scores.length))
+				const rounds: RoundHistory[] = []
+
+				for (let roundIndex = 0; roundIndex < maxRounds; roundIndex++) {
+					const roundScores = state.players.map(player => ({
+						playerId: player.id,
+						score: player.scores[roundIndex] || 0
+					}))
+
+					rounds.push({
+						roundNumber: roundIndex + 1,
+						scores: roundScores
+					})
+				}
+
+				const completedGame: CompletedGame = {
+					id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+					completedAt: new Date(),
+					gameSettings: { ...state.gameSettings },
+					players: state.players.map(p => ({ ...p })), // Deep copy players
+					rounds,
+					winners: get().getWinners(),
+					totalRounds: maxRounds
+				}
+
+				set((currentState) => {
+					const newHistory = [completedGame, ...currentState.gameHistory]
+					// Implement FIFO: keep only the last 5 games
+					const limitedHistory = newHistory.slice(0, 5)
+
+					return {
+						gameHistory: limitedHistory
+					}
+				})
+			},
+
+			getGameHistory: () => {
+				return get().gameHistory
+			},
+
+			getCompletedGameById: (id: string) => {
+				return get().gameHistory.find(game => game.id === id)
+			},
+
+			clearGameHistory: () => {
+				set({ gameHistory: [] })
 			},
 
 			// Utility actions
@@ -396,13 +585,12 @@ export const useGameStore = create<GameStore>()(
 		}),
 		{
 			name: 'game-score-tracker-storage',
-			version: 2,
+			version: 3,
 			migrate: (persistedState: unknown, version: number) => {
+				const state = persistedState as Partial<GameState>
+
 				// Handle migration from version 1 to version 2
 				if (version < 2) {
-					// Add any missing fields that were added in version 2
-					const state = persistedState as Partial<GameState>
-
 					// Ensure gameSettings has all required fields
 					if (state.gameSettings) {
 						state.gameSettings = {
@@ -431,6 +619,14 @@ export const useGameStore = create<GameStore>()(
 							totalScore: player.totalScore || 0,
 							isEliminated: player.isEliminated || false
 						}))
+					}
+				}
+
+				// Handle migration from version 2 to version 3 (add gameHistory)
+				if (version < 3) {
+					// Add gameHistory field if it doesn't exist
+					if (!state.gameHistory) {
+						state.gameHistory = []
 					}
 				}
 

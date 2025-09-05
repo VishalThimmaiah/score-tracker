@@ -1,8 +1,19 @@
 'use client'
 
-import { Player, GameMode, GameType, ScoreDifference } from '@/store/gameStore'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { Player, GameMode, GameType, ScoreDifference, useGameStore } from '@/store/gameStore'
 import { PLAYER_THEME_STRATEGIES } from '@/strategies/playerThemeStrategies'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Crown, Skull, CircleDot, Play } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -31,6 +42,11 @@ interface PlayerCardProps {
 export default function PlayerCard({ player, gameContext, playerStatus }: PlayerCardProps) {
 	const { gameMode, gameStatus, eliminationScore, currentRound } = gameContext
 	const { rank, isWinner = false, isDealer = false, isPicker = false, scoreDifference } = playerStatus
+	
+	const [showEliminationDialog, setShowEliminationDialog] = useState(false)
+	const [isLongPressing, setIsLongPressing] = useState(false)
+	const longPressTimer = useRef<NodeJS.Timeout | null>(null)
+	const { eliminatePlayerManually } = useGameStore()
 
 	// Use theme strategy to get all colors - eliminates all if-else chains
 	const themeStrategy = PLAYER_THEME_STRATEGIES[gameMode]
@@ -39,26 +55,72 @@ export default function PlayerCard({ player, gameContext, playerStatus }: Player
 	// Calculate score percentage for progress bar display
 	const scorePercentage = eliminationScore > 0 ? (player.totalScore / eliminationScore) * 100 : 0
 
+	// Check if long-press elimination should be available
+	const canEliminate = gameMode === 'points-based' && 
+						 gameStatus === 'playing' && 
+						 !player.isEliminated
+
+	// Handle manual elimination
+	const handleEliminate = () => {
+		eliminatePlayerManually(player.id)
+		setShowEliminationDialog(false)
+	}
+
+	// Long-press handlers with timer
+	const handleLongPressStart = useCallback(() => {
+		if (!canEliminate) return
+
+		setIsLongPressing(true)
+		
+		// Set timer for long press (800ms)
+		longPressTimer.current = setTimeout(() => {
+			setShowEliminationDialog(true)
+			setIsLongPressing(false)
+		}, 800)
+	}, [canEliminate])
+
+	const handleLongPressEnd = useCallback(() => {
+		if (longPressTimer.current) {
+			clearTimeout(longPressTimer.current)
+			longPressTimer.current = null
+		}
+		setIsLongPressing(false)
+	}, [])
+
+	// Cleanup timer on unmount
+	useEffect(() => {
+		return () => {
+			if (longPressTimer.current) {
+				clearTimeout(longPressTimer.current)
+			}
+		}
+	}, [])
+
 	return (
+		<>
 		<motion.div
 			whileTap={{ scale: 0.98 }}
-			initial={{ opacity: 0, y: 20 }}
 			animate={{ 
 				opacity: 1, 
 				y: 0,
-				scale: [1, 1.01, 1] // Subtle breathing effect
+				scale: isLongPressing ? 0.95 : [1, 1.01, 1] // Long-press feedback or breathing effect
 			}}
 			transition={{ 
 				type: "spring", 
 				stiffness: 300, 
 				damping: 20,
 				scale: {
-					duration: 3,
-					repeat: Infinity,
+					duration: isLongPressing ? 0.2 : 3,
+					repeat: isLongPressing ? 0 : Infinity,
 					repeatType: "reverse",
 					ease: "easeInOut"
 				}
 			}}
+			onTouchStart={handleLongPressStart}
+			onTouchEnd={handleLongPressEnd}
+			onMouseDown={handleLongPressStart}
+			onMouseUp={handleLongPressEnd}
+			onMouseLeave={handleLongPressEnd}
 		>
 			<Card className={`py-0 ${theme.background} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''} 
 				relative overflow-hidden
@@ -98,9 +160,17 @@ export default function PlayerCard({ player, gameContext, playerStatus }: Player
 								</div>
 							</div>
 							{player.isEliminated && (
-								<div className="flex items-center gap-1 text-sm opacity-75">
-									<Skull className="h-3 w-3" />
-									<span>Eliminated</span>
+								<div className="flex items-center gap-1 mt-1">
+									{player.withdrawnManually ? (
+										<div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full ${theme.withdrawalBadge}`}>
+											<span>QUIT</span>
+										</div>
+									) : (
+										<div className="flex items-center gap-1 text-sm opacity-75">
+											<Skull className="h-3 w-3" />
+											<span>Eliminated</span>
+										</div>
+									)}
 								</div>
 							)}
 							
@@ -154,5 +224,27 @@ export default function PlayerCard({ player, gameContext, playerStatus }: Player
 				</CardContent>
 			</Card>
 		</motion.div>
+
+		{/* Elimination Confirmation Dialog */}
+		<AlertDialog open={showEliminationDialog} onOpenChange={setShowEliminationDialog}>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Eliminate Player?</AlertDialogTitle>
+					<AlertDialogDescription>
+						Are you sure you want to eliminate <strong>{player.name}</strong>? This action cannot be undone and they will be removed from the current game.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel>Cancel</AlertDialogCancel>
+					<AlertDialogAction 
+						onClick={handleEliminate}
+						className="bg-red-600 hover:bg-red-700"
+					>
+						Eliminate Player
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+		</>
 	)
 }

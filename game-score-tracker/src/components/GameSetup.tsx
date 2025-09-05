@@ -29,7 +29,10 @@ import {
 	Play, 
 	Gamepad2, 
 	Clock, 
-	Settings 
+	Settings,
+	Menu,
+	ArrowLeft,
+	Home
 } from 'lucide-react'
 
 import { useGameStore, Player } from '@/store/gameStore'
@@ -38,8 +41,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import QRCodeWithLogo from './QRCodeWithLogo'
 import { ThemeToggle } from './ThemeToggle'
+import SetupActionSheet from './SetupActionSheet'
+import GameHistoryList from './GameHistoryList'
+import CompletedGameDetail from './CompletedGameDetail'
 
 interface SortablePlayerItemProps {
 	player: Player
@@ -108,6 +113,9 @@ export default function GameSetup() {
 	const playerNameRef = useRef<HTMLInputElement>(null)
 	const eliminationScoreRef = useRef<HTMLInputElement>(null)
 	const [selectedPickerId, setSelectedPickerId] = useState<string>('')
+	const [showActionSheet, setShowActionSheet] = useState(false)
+	const [currentView, setCurrentView] = useState<'setup' | 'history-list' | 'game-detail'>('setup')
+	const [selectedGameId, setSelectedGameId] = useState<string>('')
 	
 	const { 
 		players, 
@@ -209,11 +217,122 @@ export default function GameSetup() {
 		}
 	}
 
+	// Action sheet handlers
+	const handleViewGameHistory = () => {
+		setShowActionSheet(false)
+		setCurrentView('history-list')
+	}
+
+	const handleViewGameDetail = (gameId: string) => {
+		setSelectedGameId(gameId)
+		setCurrentView('game-detail')
+	}
+
+	const handleBackToSetup = () => {
+		setCurrentView('setup')
+		setSelectedGameId('')
+	}
+
+	// Render different views based on currentView state
+	if (currentView === 'history-list') {
+		return (
+			<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
+				<div className="max-w-md mx-auto space-y-6">
+					{/* Header */}
+					<div className="flex items-center justify-between py-4">
+						<div className="flex items-center gap-2">
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => setCurrentView('setup')}
+								className="text-muted-foreground hover:text-foreground"
+								title="Back to Setup"
+							>
+								<ArrowLeft className="h-5 w-5" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => setCurrentView('setup')}
+								className="text-muted-foreground hover:text-foreground"
+								title="Home"
+							>
+								<Home className="h-5 w-5" />
+							</Button>
+						</div>
+						<div className="flex-1 text-center">
+							<div className="flex items-center justify-center gap-3 mb-1">
+								<Image src="/logo.png" alt="Deck Master" width={32} height={32} className="w-8 h-8" />
+								<h1 className="text-2xl font-bold text-foreground">Deck Master</h1>
+							</div>
+							<p className="text-xs text-muted-foreground">Game History</p>
+						</div>
+						<div className="w-10">
+							<ThemeToggle />
+						</div>
+					</div>
+
+					<GameHistoryList 
+						onBack={handleBackToSetup}
+						onViewGame={handleViewGameDetail} 
+					/>
+				</div>
+			</div>
+		)
+	}
+
+	if (currentView === 'game-detail') {
+		return (
+			<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
+				<div className="max-w-md mx-auto space-y-6">
+					{/* Header */}
+					<div className="flex items-center justify-between py-4">
+						<div className="w-10">
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => setCurrentView('history-list')}
+								className="text-muted-foreground hover:text-foreground"
+							>
+								<ArrowLeft className="h-5 w-5" />
+							</Button>
+						</div>
+						<div className="flex-1 text-center">
+							<div className="flex items-center justify-center gap-3 mb-1">
+								<Image src="/logo.png" alt="Deck Master" width={32} height={32} className="w-8 h-8" />
+								<h1 className="text-2xl font-bold text-foreground">Deck Master</h1>
+							</div>
+							<p className="text-xs text-muted-foreground">Game Details</p>
+						</div>
+						<div className="w-10">
+							<ThemeToggle />
+						</div>
+					</div>
+
+					<CompletedGameDetail 
+						gameId={selectedGameId}
+						onBack={() => setCurrentView('history-list')}
+					/>
+				</div>
+			</div>
+		)
+	}
+
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-black p-4">
 			<div className="max-w-md mx-auto space-y-6">
 				{/* Header */}
 				<div className="flex items-center justify-between py-4">
+					<div className="w-10">
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setShowActionSheet(true)}
+							className="text-muted-foreground hover:text-foreground"
+						>
+							<Menu className="h-5 w-5" />
+						</Button>
+					</div>
 					<div className="flex-1 text-center">
 						<div className="flex items-center justify-center gap-3 mb-1">
 							<Image src="/logo.png" alt="Deck Master" width={32} height={32} className="w-8 h-8" />
@@ -226,9 +345,6 @@ export default function GameSetup() {
 					</div>
 				</div>
 
-				<div className="text-center">
-					<QRCodeWithLogo />
-				</div>
 
 				{/* Add Players */}
 				<Card>
@@ -482,7 +598,11 @@ export default function GameSetup() {
 											className="w-4 h-4 text-primary"
 										/>
 										<div className="flex items-center gap-3">
-											<div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
+											<div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+												selectedPickerId === player.id 
+													? 'bg-indigo-600 dark:bg-indigo-500 text-white' 
+													: 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+											}`}>
 												{index + 1}
 											</div>
 											<span className="font-medium text-foreground">{player.name}</span>
@@ -510,6 +630,13 @@ export default function GameSetup() {
 					<p>Lowest score wins • Manual scoring</p>
 				</div>
 			</div>
+
+			{/* Action Sheet */}
+			<SetupActionSheet
+				isOpen={showActionSheet}
+				onClose={() => setShowActionSheet(false)}
+				onViewGameHistory={handleViewGameHistory}
+			/>
 		</div>
 	)
 }

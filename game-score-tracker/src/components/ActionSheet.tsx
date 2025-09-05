@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
 	Dialog,
@@ -19,8 +20,9 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Home, RotateCcw, History, Eraser } from 'lucide-react'
+import { Home, RotateCcw, History, Eraser, Plus } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
+import AddPlayerSheet from './AddPlayerSheet'
 
 interface ActionSheetProps {
 	isOpen: boolean
@@ -29,7 +31,11 @@ interface ActionSheetProps {
 }
 
 export default function ActionSheet({ isOpen, onClose, onShowHistory }: ActionSheetProps) {
-	const { pauseGame, resetGame, clearScores } = useGameStore()
+	const [showAddPlayerSheet, setShowAddPlayerSheet] = useState(false)
+	const { pauseGame, resetGame, clearScores, gameSettings, gameStatus } = useGameStore()
+
+	// Check if Add Player should be available (only for points-based games during play)
+	const canAddPlayer = gameSettings.gameMode === 'points-based' && gameStatus === 'playing'
 
 	const handleReturnHome = () => {
 		pauseGame()
@@ -48,6 +54,11 @@ export default function ActionSheet({ isOpen, onClose, onShowHistory }: ActionSh
 
 	const handleClearScores = () => {
 		clearScores()
+		onClose()
+	}
+
+	const handleAddPlayer = () => {
+		setShowAddPlayerSheet(true)
 		onClose()
 	}
 
@@ -73,6 +84,21 @@ export default function ActionSheet({ isOpen, onClose, onShowHistory }: ActionSh
 					</DialogHeader>
 
 					<div className="space-y-2 pb-4">
+						{/* Add Player - Only show for points-based games */}
+						{canAddPlayer && (
+							<Button
+								variant="outline"
+								className="w-full justify-start h-12 text-left text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20"
+								onClick={handleAddPlayer}
+							>
+								<Plus className="h-5 w-5 mr-3" />
+								<div>
+									<div className="font-medium">Add Player</div>
+									<div className="text-sm text-gray-500">Add a new player to the current game</div>
+								</div>
+							</Button>
+						)}
+
 						{/* Return to Home */}
 						<Button
 							variant="outline"
@@ -167,6 +193,12 @@ export default function ActionSheet({ isOpen, onClose, onShowHistory }: ActionSh
 					</div>
 				</DialogContent>
 			</Dialog>
+
+			{/* Add Player Sheet */}
+			<AddPlayerSheet
+				isOpen={showAddPlayerSheet}
+				onClose={() => setShowAddPlayerSheet(false)}
+			/>
 		</>
 	)
 }
