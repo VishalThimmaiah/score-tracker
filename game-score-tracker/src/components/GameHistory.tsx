@@ -150,13 +150,15 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 							<CardTitle>Round History</CardTitle>
 						</CardHeader>
 						<CardContent className="p-0">
-							<div className="overflow-x-auto">
-								<table className="w-full">
-									<thead>
+							<div className="overflow-auto max-h-96">
+								<table className="w-full relative">
+									<thead className="sticky top-0 z-20">
 										<tr className="border-b bg-muted">
-											<th className="text-left p-3 font-semibold text-foreground">Round</th>
+											<th className="sticky left-0 z-30 text-center p-3 font-semibold text-foreground bg-muted border-r shadow-sm">
+												Round
+											</th>
 											{players.map(player => (
-												<th key={player.id} className="text-center p-3 font-semibold min-w-24 text-foreground">
+												<th key={player.id} className="text-center p-3 font-semibold min-w-24 text-foreground bg-muted">
 													{player.name}
 												</th>
 											))}
@@ -164,9 +166,9 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 									</thead>
 									<tbody>
 										{rounds.map(round => (
-											<tr key={round.round} className="border-b hover:bg-muted">
-												<td className="p-3 font-medium text-foreground">
-													Round {round.round}
+											<tr key={round.round} className="border-b hover:bg-muted/50">
+												<td className="sticky left-0 z-10 p-3 font-medium text-foreground bg-card border-r shadow-sm text-center">
+													{round.round}
 												</td>
 												{round.players.map(playerData => {
 													const isEliminated = playerData.isEliminated
@@ -175,7 +177,7 @@ export default function GameHistory({ onBack }: GameHistoryProps) {
 														isEliminated
 													
 													return (
-														<td key={playerData.playerId} className="p-3 text-center">
+														<td key={playerData.playerId} className="p-3 text-center bg-card">
 															<div className="space-y-1">
 																{/* Round Score */}
 																<div className={getScoreTextClass(isEliminated)}>

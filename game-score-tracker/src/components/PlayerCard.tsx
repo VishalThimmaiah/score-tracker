@@ -67,9 +67,12 @@ export default function PlayerCard({ player, gameContext, playerStatus }: Player
 	}
 
 	// Long-press handlers with timer
-	const handleLongPressStart = useCallback(() => {
+	const handleLongPressStart = useCallback((event: React.TouchEvent | React.MouseEvent) => {
 		if (!canEliminate) return
 
+		// Prevent text selection and context menu
+		event.preventDefault()
+		
 		setIsLongPressing(true)
 		
 		// Set timer for long press (800ms)
@@ -79,13 +82,20 @@ export default function PlayerCard({ player, gameContext, playerStatus }: Player
 		}, 800)
 	}, [canEliminate])
 
-	const handleLongPressEnd = useCallback(() => {
+	const handleLongPressEnd = useCallback((event: React.TouchEvent | React.MouseEvent) => {
 		if (longPressTimer.current) {
 			clearTimeout(longPressTimer.current)
 			longPressTimer.current = null
 		}
 		setIsLongPressing(false)
 	}, [])
+
+	// Prevent context menu during long press
+	const handleContextMenu = useCallback((event: React.MouseEvent) => {
+		if (canEliminate) {
+			event.preventDefault()
+		}
+	}, [canEliminate])
 
 	// Cleanup timer on unmount
 	useEffect(() => {
@@ -99,18 +109,19 @@ export default function PlayerCard({ player, gameContext, playerStatus }: Player
 	return (
 		<>
 		<motion.div
+			className="select-none" // Prevent text selection
 			whileTap={{ scale: 0.98 }}
 			animate={{ 
 				opacity: 1, 
 				y: 0,
-				scale: isLongPressing ? 0.95 : [1, 1.01, 1] // Long-press feedback or breathing effect
+				scale: isLongPressing ? 0.95 : [1, 1.015, 1] // Long-press feedback or human breathing effect
 			}}
 			transition={{ 
 				type: "spring", 
 				stiffness: 300, 
 				damping: 20,
 				scale: {
-					duration: isLongPressing ? 0.2 : 3,
+					duration: isLongPressing ? 0.2 : 3.75, // Human breathing rate: 16 breaths/min = 3.75s per breath
 					repeat: isLongPressing ? 0 : Infinity,
 					repeatType: "reverse",
 					ease: "easeInOut"
@@ -121,11 +132,12 @@ export default function PlayerCard({ player, gameContext, playerStatus }: Player
 			onMouseDown={handleLongPressStart}
 			onMouseUp={handleLongPressEnd}
 			onMouseLeave={handleLongPressEnd}
+			onContextMenu={handleContextMenu}
 		>
 			<Card className={`py-0 ${theme.background} transition-all duration-300 ${isWinner ? 'ring-2 ring-yellow-400 shadow-lg' : ''} 
 				relative overflow-hidden
 				before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent 
-				before:translate-x-[-100%] before:animate-pulse`}>
+				before:animate-human-breathe`}>
 				<CardContent className="p-4 relative z-10">
 				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center gap-3">
