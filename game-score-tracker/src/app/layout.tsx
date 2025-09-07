@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import PWAInstaller from "@/components/PWAInstaller";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import { seoConfig, getBaseUrl, getKeywordsArray } from "@/config/seo.config";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -158,6 +159,7 @@ export default function RootLayout({
           <Toaster position="top-center" richColors />
           <PWAInstaller />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
