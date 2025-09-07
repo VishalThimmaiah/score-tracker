@@ -6,6 +6,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import PWAInstaller from "@/components/PWAInstaller";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import { seoConfig, getBaseUrl, getKeywordsArray } from "@/config/seo.config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,27 +19,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Deck Master - Card Game Score Tracker & Scorer App",
-  description: "Professional card game score tracker for 5 Cards, Secret 7, Rummy, Poker, and custom card games. Digital scorekeeper with player elimination, game history, and multiplayer support. Perfect for family game nights and tournaments.",
-  keywords: [
-    // Primary keywords
-    "deck master", "card game scorer", "card game score tracker", "digital scorekeeper",
-    // Game-specific keywords
-    "5 cards game", "secret 7 card game", "rummy scorer", "poker score tracker", 
-    "card game app", "score tracking app", "game night app",
-    // Feature keywords
-    "multiplayer card games", "player elimination tracker", "game history tracker",
-    "card game rules", "score calculator", "tournament scorer",
-    // Mobile/web keywords
-    "mobile card game scorer", "web card game tracker", "online scorekeeper",
-    "card game scoring system", "digital score pad", "electronic score sheet",
-    // Casual keywords
-    "family game night", "card party scorer", "game night tracker",
-    "card game organizer", "score management", "game session tracker"
-  ],
-  authors: [{ name: "Deck Master Team" }],
-  creator: "Deck Master",
-  publisher: "Deck Master",
+  title: seoConfig.title,
+  description: seoConfig.description,
+  keywords: getKeywordsArray(),
+  authors: [{ name: seoConfig.author }],
+  creator: seoConfig.creator,
+  publisher: seoConfig.publisher,
   formatDetection: {
     email: false,
     address: false,
@@ -49,28 +35,28 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
   openGraph: {
-    title: "Deck Master - Professional Card Game Score Tracker",
-    description: "The ultimate digital scorekeeper for card games. Track scores for 5 Cards, Secret 7, Rummy, Poker and custom variants. Features player elimination, game history, and tournament support.",
+    title: seoConfig.openGraph.title,
+    description: seoConfig.openGraph.description,
     type: "website",
     locale: "en_US",
-    siteName: "Deck Master",
+    siteName: seoConfig.openGraph.siteName,
     images: [
       {
         url: "/logo.png",
         width: 126,
         height: 122,
-        alt: "Deck Master - Card Game Score Tracker Logo",
+        alt: seoConfig.openGraph.imageAlt,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Deck Master - Professional Card Game Score Tracker",
-    description: "Digital scorekeeper for card games like 5 Cards, Secret 7, Rummy, Poker. Perfect for game nights and tournaments with player elimination tracking.",
+    title: seoConfig.twitter.title,
+    description: seoConfig.twitter.description,
     images: ["/logo.png"],
-    creator: "@deckmaster",
+    creator: seoConfig.twitter.creator,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://deckmaster.vishalthimmaiah.com'),
+  metadataBase: new URL(getBaseUrl()),
   robots: {
     index: true,
     follow: true,
@@ -102,57 +88,37 @@ export default function RootLayout({
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "Deck Master",
-    "alternateName": "Deck Master Card Game Score Tracker",
-    "description": "Professional digital scorekeeper for card games including 5 Cards, Secret 7, Rummy, Poker and custom variants. Features player elimination tracking, game history, and tournament support.",
-    "url": "https://deckmaster.vishalthimmaiah.com",
-    "applicationCategory": "GameApplication",
-    "operatingSystem": "Web Browser",
+    "name": seoConfig.structuredData.name,
+    "alternateName": seoConfig.structuredData.alternateName,
+    "description": seoConfig.structuredData.description,
+    "url": getBaseUrl(),
+    "applicationCategory": seoConfig.structuredData.applicationCategory,
+    "operatingSystem": seoConfig.structuredData.operatingSystem,
     "offers": {
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "USD"
     },
-    "featureList": [
-      "Card game score tracking",
-      "Player elimination system",
-      "Game history and statistics",
-      "Multiple game variants support",
-      "Tournament mode",
-      "Mobile responsive design",
-      "Offline capability"
-    ],
-    "gameItem": [
-      {
-        "@type": "Game",
-        "name": "5 Cards",
-        "description": "Classic elimination card game with 100 point limit"
-      },
-      {
-        "@type": "Game", 
-        "name": "Secret 7",
-        "description": "Strategic 7-round card game with lowest score wins"
-      },
-      {
-        "@type": "Game",
-        "name": "Custom Card Games",
-        "description": "Configurable rules for various card game variants"
-      }
-    ],
+    "featureList": seoConfig.structuredData.features,
+    "gameItem": seoConfig.structuredData.gameItems.map(game => ({
+      "@type": "Game",
+      "name": game.name,
+      "description": game.description
+    })),
     "author": {
       "@type": "Organization",
-      "name": "Deck Master"
+      "name": seoConfig.creator
     },
     "publisher": {
       "@type": "Organization", 
-      "name": "Deck Master"
+      "name": seoConfig.publisher
     },
     "inLanguage": "en-US",
-    "isAccessibleForFree": true,
-    "browserRequirements": "Requires JavaScript. Modern web browser recommended.",
-    "softwareVersion": "1.0.0",
-    "datePublished": "2025-01-01",
-    "dateModified": "2025-01-06"
+    "isAccessibleForFree": seoConfig.structuredData.isAccessibleForFree,
+    "browserRequirements": seoConfig.structuredData.browserRequirements,
+    "softwareVersion": seoConfig.structuredData.softwareVersion,
+    "datePublished": seoConfig.structuredData.datePublished,
+    "dateModified": seoConfig.structuredData.dateModified
   };
 
   return (
