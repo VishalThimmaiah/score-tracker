@@ -1,11 +1,12 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useGameStore, type Player } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from './ThemeToggle'
 import { ArrowLeft, Trophy, Users, Target } from 'lucide-react'
+import { trackGameEvent } from '@/utils/analytics'
 
 interface GameHistoryProps {
 	onBack: () => void
@@ -13,6 +14,11 @@ interface GameHistoryProps {
 
 export default function GameHistory({ onBack }: GameHistoryProps) {
 	const { players, gameSettings, gameStatus } = useGameStore()
+
+	// Track when game history is viewed
+	useEffect(() => {
+		trackGameEvent.historyViewed()
+	}, [])
 
 	// Helper functions and computed values
 	const isPointsBasedGame = gameSettings.gameMode === 'points-based'

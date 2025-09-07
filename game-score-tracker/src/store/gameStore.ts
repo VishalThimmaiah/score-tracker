@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { GAME_TYPE_STRATEGIES } from '@/strategies/gameTypeStrategies'
 import { WINNER_CALCULATORS } from '@/strategies/winnerCalculators'
 import { gameStateMachine } from '@/strategies/gameStateMachine'
+import { trackGameEvent } from '@/utils/analytics'
 
 export interface Player {
 	id: string
@@ -129,15 +130,28 @@ export const useGameStore = create<GameStore>()(
 					isEliminated: false
 				}
 
-				set((state) => ({
-					players: [...state.players, newPlayer]
-				}))
+				set((state) => {
+					const newPlayers = [...state.players, newPlayer]
+
+					// Track player addition
+					trackGameEvent.playerAdded(name.trim(), newPlayers.length)
+
+					return {
+						players: newPlayers
+					}
+				})
 			},
 
 			removePlayer: (id: string) => {
 				set((state) => {
 					const playerIndex = state.players.findIndex(player => player.id === id)
+					const playerToRemove = state.players.find(player => player.id === id)
 					const newPlayers = state.players.filter(player => player.id !== id)
+
+					// Track player removal
+					if (playerToRemove) {
+						trackGameEvent.playerRemoved(playerToRemove.name, newPlayers.length)
+					}
 
 					// Adjust picker index if necessary
 					let newPickerIndex = state.currentPickerIndex
@@ -223,6 +237,9 @@ export const useGameStore = create<GameStore>()(
 
 				const newStatus = gameStateMachine.startGame(context)
 				if (newStatus === 'playing') {
+					// Track game started
+					trackGameEvent.gameStarted(state.gameSettings.gameType, state.players.length)
+
 					set({
 						gameStatus: newStatus,
 						currentRound: 1
@@ -304,6 +321,11 @@ export const useGameStore = create<GameStore>()(
 			},
 
 			resetGame: () => {
+				const state = get()
+
+				// Track game reset
+				trackGameEvent.gameReset(state.gameSettings.gameType, state.players.length)
+
 				const newStatus = gameStateMachine.resetGame()
 				const currentHistory = get().gameHistory
 				set({
@@ -458,15 +480,25 @@ export const useGameStore = create<GameStore>()(
 					})
 				}
 
+				const winners = get().getWinners()
 				const completedGame: CompletedGame = {
 					id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
 					completedAt: new Date(),
 					gameSettings: { ...state.gameSettings },
 					players: state.players.map(p => ({ ...p })), // Deep copy players
 					rounds,
-					winners: get().getWinners(),
+					winners,
 					totalRounds: maxRounds
 				}
+
+				// Track game completion
+				const winnerName = winners.length > 0 ? winners[0].name : 'No Winner'
+				trackGameEvent.gameCompleted(
+					state.gameSettings.gameType,
+					state.players.length,
+					maxRounds,
+					winnerName
+				)
 
 				set((currentState) => {
 					const newHistory = [completedGame, ...currentState.gameHistory]
