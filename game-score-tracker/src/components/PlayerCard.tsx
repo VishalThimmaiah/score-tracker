@@ -82,7 +82,7 @@ export default function PlayerCard({ player, gameContext, playerStatus }: Player
 		}, 800)
 	}, [canEliminate])
 
-	const handleLongPressEnd = useCallback((event: React.TouchEvent | React.MouseEvent) => {
+	const handleLongPressEnd = useCallback(() => {
 		if (longPressTimer.current) {
 			clearTimeout(longPressTimer.current)
 			longPressTimer.current = null

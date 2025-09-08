@@ -14,7 +14,7 @@ export interface PlayerThemeStrategy {
 
 
 export class PointsBasedThemeStrategy implements PlayerThemeStrategy {
-	getTheme(player: Player, eliminationScore: number, _scoreDifference?: ScoreDifference): PlayerTheme {
+	getTheme(player: Player, eliminationScore: number): PlayerTheme {
 		// Dealer badge is always rose-colored
 		const dealerBadge = 'bg-rose-600 dark:bg-rose-500 text-white'
 		// Withdrawal badge is always amber

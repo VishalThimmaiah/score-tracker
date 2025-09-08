@@ -5,8 +5,8 @@
 
 export const seoConfig = {
 	// Basic metadata
-	title: "Deck Master - Card Game Score Tracker & Scorer App",
-	description: "Professional card game score tracker for 5 Cards, Secret 7, Rummy, Poker, and custom card games. Digital scorekeeper with player elimination, game history, and multiplayer support. Perfect for family game nights and tournaments.",
+	title: "Deck Master - Card Game Score Tracker Online | Free Digital Scorer",
+	description: "Free online card game score tracker for 5 Cards, Secret 7, Rummy, Poker, and custom card games. Best digital scorekeeper with player elimination, game history, and multiplayer support. Perfect web-based score tracking tool for family game nights and tournaments.",
 
 	// Keywords organized by category for better maintainability
 	keywords: [
@@ -14,7 +14,9 @@ export const seoConfig = {
 		"deck master",
 		"card game scorer",
 		"card game score tracker",
+		"card game score tracker online",
 		"digital scorekeeper",
+		"online card game scorer",
 
 		// Game-specific keywords
 		"5 cards game",
@@ -24,6 +26,8 @@ export const seoConfig = {
 		"card game app",
 		"score tracking app",
 		"game night app",
+		"card game scoring app",
+		"online card game app",
 
 		// Feature keywords
 		"multiplayer card games",
@@ -32,6 +36,9 @@ export const seoConfig = {
 		"card game rules",
 		"score calculator",
 		"tournament scorer",
+		"card game counter",
+		"score keeper app",
+		"game score manager",
 
 		// Mobile/web keywords
 		"mobile card game scorer",
@@ -40,6 +47,9 @@ export const seoConfig = {
 		"card game scoring system",
 		"digital score pad",
 		"electronic score sheet",
+		"browser card game scorer",
+		"web-based score tracker",
+		"online game scorer",
 
 		// Casual keywords
 		"family game night",
@@ -47,7 +57,31 @@ export const seoConfig = {
 		"game night tracker",
 		"card game organizer",
 		"score management",
-		"game session tracker"
+		"game session tracker",
+		"card game helper",
+		"score tracking tool",
+
+		// Long-tail keywords for better targeting
+		"free card game score tracker",
+		"best card game scorer online",
+		"card game score keeper free",
+		"online card game score calculator",
+		"digital card game scorepad",
+		"card game scoring website",
+		"web card game score tracker",
+		"card game score tracking software",
+		"online score tracker for card games",
+		"card game score counter online",
+
+		// Alternative spellings and variations
+		"cardgame scorer",
+		"card-game score tracker",
+		"scorekeeper for card games",
+		"card games score tracker",
+		"online card scorer",
+		"digital game scorer",
+		"card game point tracker",
+		"game scoring app online"
 	],
 
 	// Author and publisher info
@@ -57,16 +91,16 @@ export const seoConfig = {
 
 	// Social media metadata
 	openGraph: {
-		title: "Deck Master - Professional Card Game Score Tracker",
-		description: "The ultimate digital scorekeeper for card games. Track scores for 5 Cards, Secret 7, Rummy, Poker and custom variants. Features player elimination, game history, and tournament support.",
+		title: "Deck Master - Free Online Card Game Score Tracker",
+		description: "Best free online card game score tracker for 5 Cards, Secret 7, Rummy, Poker and custom variants. Digital scorekeeper with player elimination, game history, and tournament support. Perfect web-based scoring tool.",
 		siteName: "Deck Master",
 		imageAlt: "Deck Master - Card Game Score Tracker Logo",
 	},
 
 	// Twitter metadata
 	twitter: {
-		title: "Deck Master - Professional Card Game Score Tracker",
-		description: "Digital scorekeeper for card games like 5 Cards, Secret 7, Rummy, Poker. Perfect for game nights and tournaments with player elimination tracking.",
+		title: "Deck Master - Free Online Card Game Score Tracker",
+		description: "Free online card game score tracker for 5 Cards, Secret 7, Rummy, Poker. Best digital scorekeeper for game nights and tournaments with player elimination tracking.",
 		creator: "@deckmaster",
 	},
 

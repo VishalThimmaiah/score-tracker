@@ -1,19 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useGameStore } from '@/store/gameStore'
-import type { Player } from '@/store/gameStore'
-
-// Helper to get a fresh store instance
-const getStore = () => {
-	const store = useGameStore.getState()
-	// Clear all state completely
-	store.resetGame()
-	// Clear players array manually to ensure clean state
-	useGameStore.setState({ players: [] })
-	return store
-}
 
 describe('Integration: Player Elimination and Addition', () => {
-	let store: ReturnType<typeof getStore>
+	let store: ReturnType<typeof useGameStore.getState>
 
 	beforeEach(() => {
 		// Get fresh store instance

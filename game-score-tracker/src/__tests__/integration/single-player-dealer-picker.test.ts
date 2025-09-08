@@ -1,18 +1,8 @@
 import { useGameStore } from '@/store/gameStore'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-// Helper to get a fresh store instance
-const getStore = () => {
-	const store = useGameStore.getState()
-	// Clear all state completely
-	store.resetGame()
-	// Clear players array manually to ensure clean state
-	useGameStore.setState({ players: [] })
-	return store
-}
-
 describe('Integration: Single Player Dealer-Picker Scenario', () => {
-	let store: ReturnType<typeof getStore>
+	let store: ReturnType<typeof useGameStore.getState>
 
 	beforeEach(() => {
 		// Get fresh store instance
@@ -269,9 +259,8 @@ describe('Integration: Single Player Dealer-Picker Scenario', () => {
 			const finalState = useGameStore.getState()
 			const activePlayers = finalState.players.filter(p => !p.isEliminated)
 
-			// Find the index of the remaining active player in the full players array
+			// Find the remaining active player
 			const remainingPlayer = activePlayers[0]
-			const remainingPlayerIndex = finalState.players.findIndex(p => p.id === remainingPlayer.id)
 
 			// Verify mathematical calculation: (pickerIndex - 1 + playersLength) % playersLength
 			// With only 1 active player, this should resolve to the same index
