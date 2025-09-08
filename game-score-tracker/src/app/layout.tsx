@@ -58,6 +58,9 @@ export const metadata: Metadata = {
     creator: seoConfig.twitter.creator,
   },
   metadataBase: new URL(getBaseUrl()),
+  alternates: {
+    canonical: getBaseUrl(),
+  },
   robots: {
     index: true,
     follow: true,

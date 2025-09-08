@@ -11,8 +11,24 @@ const nextConfig: NextConfig = {
   // Compression for better loading speeds
   compress: true,
 
-  // Generate static sitemap
+  // Generate static sitemap and handle trailing slashes consistently
   trailingSlash: false,
+
+  // Add redirects to handle common URL variations
+  async redirects() {
+    return [
+      {
+        source: '/index',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
 
   // PWA and SEO optimizations
   poweredByHeader: false,
