@@ -2,6 +2,7 @@ import React from 'react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import PWAUpdateNotifier from '@/components/PWAUpdateNotifier'
+import type { ServiceWorkerUpdateInfo } from '@/utils/sw-registration'
 
 // Mock the service worker manager
 vi.mock('@/utils/sw-registration', () => ({
@@ -36,9 +37,9 @@ describe('PWAUpdateNotifier', () => {
 	})
 
 	it('should render update notification when update is available', async () => {
-		let updateCallback: ((info: any) => void) | null = null
+		let updateCallback: ((info: ServiceWorkerUpdateInfo) => void) | null = null
 		
-		mockOnUpdateAvailable.mockImplementation((callback: (info: any) => void) => {
+		mockOnUpdateAvailable.mockImplementation((callback: (info: ServiceWorkerUpdateInfo) => void) => {
 			updateCallback = callback
 			return () => {} // Mock unsubscribe function
 		})
@@ -49,7 +50,7 @@ describe('PWAUpdateNotifier', () => {
 		if (updateCallback) {
 			updateCallback({
 				isUpdateAvailable: true,
-				newWorker: { postMessage: vi.fn() }
+				newWorker: { postMessage: vi.fn() } as unknown as ServiceWorker
 			})
 		}
 
@@ -63,9 +64,9 @@ describe('PWAUpdateNotifier', () => {
 	})
 
 	it('should handle update button click', async () => {
-		let updateCallback: ((info: any) => void) | null = null
+		let updateCallback: ((info: ServiceWorkerUpdateInfo) => void) | null = null
 		
-		mockOnUpdateAvailable.mockImplementation((callback: (info: any) => void) => {
+		mockOnUpdateAvailable.mockImplementation((callback: (info: ServiceWorkerUpdateInfo) => void) => {
 			updateCallback = callback
 			return () => {} // Mock unsubscribe function
 		})
@@ -78,7 +79,7 @@ describe('PWAUpdateNotifier', () => {
 		if (updateCallback) {
 			updateCallback({
 				isUpdateAvailable: true,
-				newWorker: { postMessage: vi.fn() }
+				newWorker: { postMessage: vi.fn() } as unknown as ServiceWorker
 			})
 		}
 
@@ -100,9 +101,9 @@ describe('PWAUpdateNotifier', () => {
 	})
 
 	it('should handle update error', async () => {
-		let updateCallback: ((info: any) => void) | null = null
+		let updateCallback: ((info: ServiceWorkerUpdateInfo) => void) | null = null
 		
-		mockOnUpdateAvailable.mockImplementation((callback: (info: any) => void) => {
+		mockOnUpdateAvailable.mockImplementation((callback: (info: ServiceWorkerUpdateInfo) => void) => {
 			updateCallback = callback
 			return () => {} // Mock unsubscribe function
 		})
@@ -115,7 +116,7 @@ describe('PWAUpdateNotifier', () => {
 		if (updateCallback) {
 			updateCallback({
 				isUpdateAvailable: true,
-				newWorker: { postMessage: vi.fn() }
+				newWorker: { postMessage: vi.fn() } as unknown as ServiceWorker
 			})
 		}
 
@@ -141,9 +142,9 @@ describe('PWAUpdateNotifier', () => {
 	})
 
 	it('should handle dismiss button click', async () => {
-		let updateCallback: ((info: any) => void) | null = null
+		let updateCallback: ((info: ServiceWorkerUpdateInfo) => void) | null = null
 		
-		mockOnUpdateAvailable.mockImplementation((callback: (info: any) => void) => {
+		mockOnUpdateAvailable.mockImplementation((callback: (info: ServiceWorkerUpdateInfo) => void) => {
 			updateCallback = callback
 			return () => {} // Mock unsubscribe function
 		})
@@ -154,7 +155,7 @@ describe('PWAUpdateNotifier', () => {
 		if (updateCallback) {
 			updateCallback({
 				isUpdateAvailable: true,
-				newWorker: { postMessage: vi.fn() }
+				newWorker: { postMessage: vi.fn() } as unknown as ServiceWorker
 			})
 		}
 
@@ -173,9 +174,9 @@ describe('PWAUpdateNotifier', () => {
 	})
 
 	it('should not render when newWorker is missing', async () => {
-		let updateCallback: ((info: any) => void) | null = null
+		let updateCallback: ((info: ServiceWorkerUpdateInfo) => void) | null = null
 		
-		mockOnUpdateAvailable.mockImplementation((callback: (info: any) => void) => {
+		mockOnUpdateAvailable.mockImplementation((callback: (info: ServiceWorkerUpdateInfo) => void) => {
 			updateCallback = callback
 			return () => {} // Mock unsubscribe function
 		})
@@ -186,7 +187,7 @@ describe('PWAUpdateNotifier', () => {
 		if (updateCallback) {
 			updateCallback({
 				isUpdateAvailable: true,
-				newWorker: null
+				newWorker: undefined
 			})
 		}
 
@@ -209,20 +210,20 @@ describe('PWAUpdateNotifier', () => {
 	})
 
 	it('should handle update button click without newWorker', async () => {
-		let updateCallback: ((info: any) => void) | null = null
+		let updateCallback: ((info: ServiceWorkerUpdateInfo) => void) | null = null
 		
-		mockOnUpdateAvailable.mockImplementation((callback: (info: any) => void) => {
+		mockOnUpdateAvailable.mockImplementation((callback: (info: ServiceWorkerUpdateInfo) => void) => {
 			updateCallback = callback
 			return () => {} // Mock unsubscribe function
 		})
 
 		render(<PWAUpdateNotifier />)
 
-		// Simulate update available with null newWorker from the start
+		// Simulate update available with undefined newWorker from the start
 		if (updateCallback) {
 			updateCallback({
 				isUpdateAvailable: true,
-				newWorker: null
+				newWorker: undefined
 			})
 		}
 
@@ -234,9 +235,9 @@ describe('PWAUpdateNotifier', () => {
 	})
 
 	it('should display correct icons and styling', async () => {
-		let updateCallback: ((info: any) => void) | null = null
+		let updateCallback: ((info: ServiceWorkerUpdateInfo) => void) | null = null
 		
-		mockOnUpdateAvailable.mockImplementation((callback: (info: any) => void) => {
+		mockOnUpdateAvailable.mockImplementation((callback: (info: ServiceWorkerUpdateInfo) => void) => {
 			updateCallback = callback
 			return () => {} // Mock unsubscribe function
 		})
@@ -247,7 +248,7 @@ describe('PWAUpdateNotifier', () => {
 		if (updateCallback) {
 			updateCallback({
 				isUpdateAvailable: true,
-				newWorker: { postMessage: vi.fn() }
+				newWorker: { postMessage: vi.fn() } as unknown as ServiceWorker
 			})
 		}
 
