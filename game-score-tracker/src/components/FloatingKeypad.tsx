@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useCallback } from 'react'
+import React, { memo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Delete, X, Check } from 'lucide-react'
@@ -55,20 +55,24 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 			<div
 				className={`fixed z-50 animate-in fade-in-0 zoom-in-95 duration-200 ${
 					position.useCSSPositioning 
-						? 'left-1/2 bottom-20 -translate-x-1/2' 
+						? '' 
 						: ''
 				}`}
 				style={
 					position.useCSSPositioning 
-						? {} 
+						? { 
+							left: '50%', 
+							bottom: '1rem', 
+							transform: 'translateX(-50%)' 
+						} 
 						: {
 							left: `${position.x}px`,
 							top: `${position.y}px`
 						}
 				}
 			>
-				<Card className="w-56 shadow-xl border-2 bg-card">
-				<CardContent className="px-4">
+				<Card className="w-64 shadow-xl border-2 bg-card">
+				<CardContent className="px-5 py-0">
 					{/* Header */}
 					<div className="flex items-center justify-between mb-3">
 						<div className="text-sm font-medium text-muted-foreground truncate">
@@ -85,14 +89,14 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 					</div>
 
 					{/* Display */}
-					<div className="mb-4 p-3 bg-muted rounded border text-center">
-						<div className="text-xl font-mono font-semibold text-foreground min-h-[32px]">
+					<div className="mb-5 p-4 bg-muted rounded border text-center">
+						<div className="text-2xl font-mono font-semibold text-foreground min-h-[36px]">
 							{currentValue || '--'}
 						</div>
 					</div>
 
 					{/* Number Grid - 4x3 Grid Layout */}
-					<div className="grid grid-cols-3 gap-2 mb-4">
+					<div className="grid grid-cols-3 gap-3 mb-5">
 						{/* First 3 rows of numbers */}
 						{keypadButtons.map((row) => 
 							row.map((digit) => (
@@ -101,7 +105,7 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 									variant="outline"
 									size="sm"
 									onClick={() => handleNumberPress(digit)}
-									className="h-11 w-11 p-0 text-base font-semibold hover:bg-muted/50 hover:border-border/80 active:bg-muted transition-colors duration-75"
+									className="h-14 w-14 p-0 text-lg font-semibold hover:bg-muted/50 hover:border-border/80 active:bg-muted transition-colors duration-75"
 								>
 									{digit}
 								</Button>
@@ -113,16 +117,16 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 							variant="outline"
 							size="sm"
 							onClick={onBackspace}
-							className="h-11 w-11 p-0 hover:bg-red-50 hover:border-red-300 active:bg-red-100 dark:hover:bg-red-900/20 dark:hover:border-red-600 dark:active:bg-red-900/40 transition-colors duration-75"
+							className="h-14 w-14 p-0 hover:bg-red-50 hover:border-red-300 active:bg-red-100 dark:hover:bg-red-900/20 dark:hover:border-red-600 dark:active:bg-red-900/40 transition-colors duration-75"
 							disabled={!currentValue}
 						>
-							<Delete className="h-4 w-4" />
+							<Delete className="h-5 w-5" />
 						</Button>
 						<Button
 							variant="outline"
 							size="sm"
 							onClick={() => handleNumberPress('0')}
-							className="h-11 w-11 p-0 text-base font-semibold hover:bg-muted/50 hover:border-border/80 active:bg-muted transition-colors duration-75"
+							className="h-14 w-14 p-0 text-lg font-semibold hover:bg-muted/50 hover:border-border/80 active:bg-muted transition-colors duration-75"
 						>
 							0
 						</Button>
@@ -130,7 +134,7 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 							variant="outline"
 							size="sm"
 							onClick={onMultiply}
-							className="h-11 w-11 p-0 text-sm font-semibold hover:bg-green-50 hover:border-green-300 active:bg-green-100 dark:hover:bg-green-900/20 dark:hover:border-green-600 dark:active:bg-green-900/40 transition-colors duration-75"
+							className="h-14 w-14 p-0 text-base font-semibold hover:bg-green-50 hover:border-green-300 active:bg-green-100 dark:hover:bg-green-900/20 dark:hover:border-green-600 dark:active:bg-green-900/40 transition-colors duration-75"
 							disabled={!currentValue || currentValue === '0'}
 						>
 							×2
@@ -138,12 +142,12 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 					</div>
 
 					{/* Action Buttons */}
-					<div className="flex gap-2">
+					<div className="flex gap-3">
 						<Button
 							variant="outline"
 							size="sm"
 							onClick={onClear}
-							className="flex-1 h-9 text-xs hover:bg-muted/50 active:bg-muted transition-colors duration-75"
+							className="flex-1 h-11 text-sm hover:bg-muted/50 active:bg-muted transition-colors duration-75"
 							disabled={!currentValue}
 						>
 							Clear
@@ -151,10 +155,10 @@ export const FloatingKeypad = memo(function FloatingKeypad({
 						<Button
 							size="sm"
 							onClick={onConfirm}
-							className="flex-1 h-9 bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 transition-colors duration-75"
+							className="flex-1 h-11 bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 transition-colors duration-75"
 							disabled={currentValue === ''}
 						>
-							<Check className="h-3 w-3" />
+							<Check className="h-4 w-4" />
 						</Button>
 					</div>
 

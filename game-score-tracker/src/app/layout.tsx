@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import PWAInstaller from "@/components/PWAInstaller";
+import PWAUpdateNotifier from "@/components/PWAUpdateNotifier";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import { seoConfig, getBaseUrl, getKeywordsArray } from "@/config/seo.config";
 import { Analytics } from "@vercel/analytics/next";
@@ -155,6 +156,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <OfflineIndicator />
+        <PWAUpdateNotifier />
         <ThemeProvider>
           <ErrorBoundary>
             {children}
