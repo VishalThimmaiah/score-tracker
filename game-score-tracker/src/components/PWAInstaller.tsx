@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { registerServiceWorker } from '@/utils/sw-registration'
 
 export default function PWAInstaller() {
-	const [registrationStatus, setRegistrationStatus] = useState<'loading' | 'success' | 'error' | 'unsupported'>('loading')
+	const [, setRegistrationStatus] = useState<'loading' | 'success' | 'error' | 'unsupported'>('loading')
 
 	useEffect(() => {
 		const initializeServiceWorker = async () => {

@@ -133,7 +133,7 @@ class ServiceWorkerManager {
 	/**
 	 * Send a message to the service worker
 	 */
-	async sendMessage(message: any): Promise<any> {
+	async sendMessage(message: Record<string, unknown>): Promise<Record<string, unknown>> {
 		if (!this.registration?.active) {
 			throw new Error('No active service worker to send message to');
 		}
@@ -171,7 +171,7 @@ class ServiceWorkerManager {
 	async getVersion(): Promise<string> {
 		try {
 			const response = await this.sendMessage({ type: 'GET_VERSION' });
-			return response.version || 'unknown';
+			return (response.version as string) || 'unknown';
 		} catch (error) {
 			console.log('[SW Manager] Could not get version:', error);
 			return 'unknown';
